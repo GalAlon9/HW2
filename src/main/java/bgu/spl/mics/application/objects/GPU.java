@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.LinkedList;
+
 /**
  * Passive object representing a single GPU.
  * Add all the fields described in the assignment as private fields.
@@ -14,6 +16,10 @@ public class GPU {
     private Type type;
     private Model model;
     private Cluster cluster;
+    private LinkedList<DataBatch> Disk;
+    private LinkedList<DataBatch> VRAM;
+    private int VRAM_Capacity;
+
     /**
      * 
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
@@ -24,28 +30,49 @@ public class GPU {
         cluster = clstr;
         model = mdl;
         type = typ;
+        VRAM_Capacity = type==Type.GTX1080?8: type==Type.RTX2080?16 :32;
+        Disk = new LinkedList<DataBatch>();
+        VRAM = new LinkedList<DataBatch>(); 
+
+     }
+    // /**
+    //  * 
+    //  * @return returns the model this GPU works on
+    //  */
+    // public Model getModel(){
+    //     return model;
+    // }
+    // /**
+    //  * 
+    //  * @return returns the GPU type
+    //  */
+    // public Type getType(){
+    //     return type;
+    // }
+    // /**
+    //  * 
+    //  * @return returns the computre cluster this GPU is part of
+    //  */
+    // public Cluster getCluster(){
+    //     return cluster;
+    // }
+
+    public DataBatch getBatches(){
+        return null;
+    }
+    //gets the processed data from cluster and puts it in VRAM
+    public Data getProcessedData(){
+        return null;
+    }
+    
+    
+    public void buildDataFromBatches(DataBatch dataBatch){
 
     }
-    /**
-     * 
-     * @return returns the model this GPU works on
-     */
-    public Model getModel(){
-        return model;
+
+    public void prepareBatches(){
+
     }
-    /**
-     * 
-     * @return returns the GPU type
-     */
-    public Type getType(){
-        return type;
-    }
-    /**
-     * 
-     * @return returns the computre cluster this GPU is part of
-     */
-    public Cluster getCluster(){
-        return cluster;
-    }
+
 
 }
