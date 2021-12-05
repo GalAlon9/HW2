@@ -14,32 +14,52 @@ public class CPU {
     private Cluster cluster;
     private int currTick;
 
-    public CPU(int cores){
-        cores = cores;
+    public CPU(int cores , Cluster cluster , int tick){
+        this.cores = cores;
         data = new LinkedList<DataBatch>();
+        this.cluster = cluster;
+        currTick = tick;
     }
+    /**
+     * @inv the cpu can receive data to process
+     * @param dBatch - dataBatch to process
+     */
     public void addData(DataBatch dBatch){
         data.add(dBatch);
     }
     /**
-     * @Pre the DataBatch isnt processed
+     * @Pre the DataBatch isn't processed
      * @Post the DataBatch is processed
      * @return the processed dataBatch 
      */
     public DataBatch process(){
-        DataBatch toProcess = this.data.poll();
-        toProcess.process();
-        return toProcess;
+        DataBatch data = this.data.poll();
+        int startTick = getTick();
+        while(getTick() < startTick + TicksToProcess(data)){
+        }
+        // DataBatch toProcess = this.data.poll();
+        // toProcess.process();
+        // return toProcess;
+        return null;
     }
-    public void updateTick(){
-        //currTick = ********
+    /**
+    * @pre: None
+    * @post: currTick = tick
+     */
+    public void updateTick(int tick){
+        currTick = tick;
+    }
+
+    public int getTick(){
+        return currTick;
     }
     /**
      * 
-     * @param dataBatch - based on dataBatch type and number of cores calculates how many ticks required to process the data
+     * @param dataBatch - based on dataBatch type and number of cores calculates
+     *                    how many ticks required to process the data
      * @return how many ticks required to process the data
      */
-    private int TicksToProcess(DataBatch dataBatch){
+    public int TicksToProcess(DataBatch dataBatch){
         // if(dataBatch.getData().getType() == Data.Type.Images) return(32/cores)*4;
         // if(dataBatch.getData().getType() == Data.Type.Text) return(32/cores)*2;
         // else return 32/cores;
