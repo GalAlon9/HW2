@@ -1,6 +1,9 @@
 package bgu.spl.mics;
 import static org.junit.Assert.*;
 
+import bgu.spl.mics.example.messages.ExampleBroadcast;
+import bgu.spl.mics.example.services.ExampleEventHandlerService;
+import bgu.spl.mics.example.services.*;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
@@ -9,47 +12,51 @@ import bgu.spl.mics.application.services.ConferenceService;
 import bgu.spl.mics.example.messages.ExampleEvent;
 import bgu.spl.mics.example.services.ExampleBroadcastListenerService;
 
-public class MessegeBusTest{
+public class MessageBusTest {
 
-    private static MessageBus mb;
-    private static MicroService broadcastListener;
-    private static MicroService eventHandler;
-    private static MicroService MessageSender;
+    private static MessageBusImpl mb;
+    private static MicroService broadcastListener1;
+    private static MicroService broadcastListener2;
+    private static MicroService eventHandler1;
+    private static MicroService eventHandler2;
+    private static MicroService messageSender;
     private static ExampleBroadcast broadcast;
     private static ExampleEvent event;
 
     @Before
      public void setUp() throws Exception{
-        mb = new MessageBus();
-        broadcastListener = new ExampleBroadcastListenerService();
-        eventHandler = new ExampleEventHandlerService();
-        messageSender = new ExampleMessageSenderService();
+        mb = MessageBusImpl.getInstance();
+        broadcastListener1 = new ExampleBroadcastListenerService("example",new String[1]);
+        broadcastListener2 = new ExampleBroadcastListenerService("example",new String[1]);
+        eventHandler1 = new ExampleEventHandlerService("example",new String[1]);
+        eventHandler2 = new ExampleEventHandlerService("example",new String[1]);
+        messageSender = new ExampleMessageSenderService("example",new String[1]);
         broadcast  = new ExampleBroadcast("0");    
         event = new ExampleEvent("Gal");
     }
 
     @After
     public void tearDown() throws Exception {
-        mb.Clear();
+        //mb.Clear();
     }
 
 
     @Test
     public void testSubscribeEvent() {
         //pre
-        assertFalse("Error if ms is subscribed", mb.isSubscribedToEvent(event, eventHandler));
+        assertFalse("Error if ms is subscribed", mb.isSubscribedToEvent(event.getClass(), eventHandler1));
         
-        mb.subscribeEvent(event, eventHandler);
-        assertTrue("Error if ms is not subscribed",  mb.isSubscribedToEvent(event, eventHandler));
+        mb.subscribeEvent(event.getClass(), eventHandler1);
+        assertTrue("Error if ms is not subscribed",  mb.isSubscribedToEvent(event.getClass(), eventHandler1));
     }
 
     @Test
     public void testSubscribeBroadcast() {
         //pre
-        assertFalse("Error if ms is subscribed", mb.isSubscribedToBroadcast(broadcast, broadcastListener));
+        assertFalse("Error if ms is subscribed", mb.isSubscribedToBroadcast(broadcast.getClass(), broadcastListener1));
         //post
-        mb.subscribeBroadcast(broadcast, broadcastListener);
-        assertTrue("Error if ms is not subscribed", mb.isSubscribedToBroadcast(broadcast, broadcastListener));
+        mb.subscribeBroadcast(broadcast.getClass(), broadcastListener1);
+        assertTrue("Error if ms is not subscribed", mb.isSubscribedToBroadcast(broadcast.getClass(), broadcastListener1));
     }
 
     @Test
@@ -57,52 +64,73 @@ public class MessegeBusTest{
         // pre
         assertFalse("Error if completed", mb.isComplete(event));
         mb.complete(event, "someResult");
-        assertTrue("Errpr of not completed", mb.isComplete(event));
+        assertTrue("Error of not completed", mb.isComplete(event));
     }
 
     @Test
     public void testSendBroadcast() {
-        //pre
-        assertFalse("Error if broadcast is sent", mb.isBroadcastSent(broadcast));
-        
+        Message  m1 , m2;
+        mb.subscribeBroadcast(ExampleBroadcast.class, broadcastListener1);
+        mb.subscribeBroadcast(ExampleBroadcast.class, broadcastListener2);
         mb.sendBroadcast(broadcast);
+        try{
+            m1= mb.awaitMessage(broadcastListener1);
+            assertEquals("the micro service didn't receive the broadcast",broadcast, m1);
 
-        //post
-        assertTrue("Error if broadcast is not sent", mb.isBroadcastSent(broadcast));
+
+
+        }catch(InterruptedException exception){
+            exception.printStackTrace();
+        }
+        try{
+            m2= mb.awaitMessage(broadcastListener2);
+            assertEquals("the micro service didn't receive the broadcast",broadcast, m2);
+
+
+        }catch(InterruptedException exception){
+            exception.printStackTrace();
+        }
+
+
+        
     }
 
     @Test
     public void testSendEvent() {
+        //setup
+        Future<String> future;
         // pre
-         assertFalse("Error if event is sent", mb.isEventSent(event));
-         mb.sendEvent(event);
-         //post
-        assertTrue("Error if broadcast is  sent", mb.isBroadcastSent(broadcast));
+        assertNull(mb.sendEvent(event));
+        // set
+        mb.subscribeEvent(ExampleEvent.class, eventHandler1);
+        future = mb.sendEvent(event);
+        // post
+        assertNotNull(future);
 
     }
 
     @Test
     public void testRegister() {
-        assertFalse("Error if is registered", mb.isRegister(messageSender));
+        assertFalse("Error if is registered", mb.isRegistered(messageSender));
         mb.register(messageSender);
-        assertTrue("Error if not registered", mb.isRegister(messageSender));
+        assertTrue("Error if not registered", mb.isRegistered(messageSender));
     }
 
     @Test
     public void testUnregister() {
-        assertTrue("Error if not registered", mb.isRegister(messageSender));
+        assertTrue("Error if not registered", mb.isRegistered(messageSender));
         mb.unregister(messageSender);
-        assertFalse("Error if is registered", mb.isRegister(messageSender));
+        assertFalse("Error if is registered", mb.isRegistered(messageSender));
     }
 
     @Test
     public void testAwaitMessage() {
         //setup
-        mb.register(broadcastListener);
-        mb.subscribeBroadcast(broadcast,broadcastListener);
+        mb.register(broadcastListener1);
+        mb.subscribeBroadcast(broadcast.getClass(),broadcastListener1);
         mb.sendBroadcast(broadcast);
         try{
-            Message message = mb.awaitMessage(broadcastListener);
+            Message message = mb.awaitMessage(broadcastListener1);
             assertEquals("Error if not equal",broadcast, message);
         }
         catch(InterruptedException exception){

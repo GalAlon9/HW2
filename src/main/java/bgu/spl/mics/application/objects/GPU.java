@@ -23,7 +23,6 @@ public class GPU {
     /**
      * 
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
-     * @param mdl the model the GPU is currently working on
      * @param clstr The compute cluster
      */
     public GPU (Type typ, Cluster clstr){
@@ -44,7 +43,7 @@ public class GPU {
          this.model = model;
          // preparebatches()
      }
-     public void getModel(){
+     public Model getModel(){
          return this.model;
      }
 

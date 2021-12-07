@@ -66,5 +66,8 @@ public class CPU {
         return 0;
 
     }
+    public int getDataSize(){
+        return data.size();
+    }
 
 }

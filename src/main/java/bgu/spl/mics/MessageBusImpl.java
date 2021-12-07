@@ -1,4 +1,9 @@
 package bgu.spl.mics;
+
+import com.sun.org.apache.xml.internal.serializer.utils.MsgKey;
+import sun.jvm.hotspot.oops.ObjArray;
+import sun.nio.cs.MS874;
+
 import java.util.*;
 
 /**
@@ -7,113 +12,243 @@ import java.util.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-	private HashMap<MicroService, Queue<Message>> MSqueueMap;
-	private HashMap<Class<? extends Event> , Queue<MicroService>> eventMap;
-	private HashMap<Class<? extends Broadcast> , HashSet<MicroService>> broadcastMap;
-	private HashMap<Class<? extends Event> , Future> futureMap;
+    private static MessageBusImpl instance;
+    private HashMap<MicroService, Queue<Message>> MSqueueMap;
+    private HashMap<Class<? extends Event>, Queue<MicroService>> eventMap; //todo: check if queue is the best implement
+    private HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
+    private HashMap<Event, Future> futureMap;
+    private Object MSqueueLocker;
+    private Object eventLocker;
+    private Object broadcastLocker;
+    private Object futureLocker;
 
-	private MessageBusImpl(){
-		MSqueueMap = new HashMap<>();
-		eventMap = new HashMap<>();
-		broadcastMap = new HashMap<>();
-		futureMap = new HashMap<>();
-	}
+    private MessageBusImpl() {
+        MSqueueMap = new HashMap<>();
+        eventMap = new HashMap<>();
+        broadcastMap = new HashMap<>();
+        futureMap = new HashMap<>();
+        MSqueueLocker = new Object();
+        eventLocker = new Object();
+        broadcastLocker = new Object();
+        futureLocker = new Object();
+    }
+
+    public static MessageBusImpl getInstance() {
+        if (instance == null) {
+            instance = new MessageBusImpl();
+        }
+        return instance;
+    }
 
 
-	/**
-     * Subscribes {@code m} to receive {@link Event}s of type {@code type}.
-     * <p>
-     * @param <T>  The type of the result expected by the completed event.
-     * @param type The type to subscribe to,
-     * @param m    The subscribing micro-service.
-	 * @Pre the MicroService is registered
-	 * @Post the MicroService is subscribed to the Event -> m is aded 
-	 * to this Event q in EventMap
+    /**
+     * @Pre the MicroService is registered -> isRegistered(m) == true
+     * @Post the MicroService is subscribed to the Event -> isSubscribedToEvent(type,m)==true
+     * to this Event q in EventMap
      */
-	@Override
-	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		// TODO Auto-generated method stub
+    @Override
+    public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
+        synchronized (eventLocker) {
+            if (eventMap.containsKey(type)) {
+                eventMap.get(type).add(m);
+            } else {
+                Queue<MicroService> MSQ = new LinkedList<MicroService>();
+                MSQ.add(m);
+                eventMap.put(type, MSQ);
+            }
+        }
 
-	}
-	/**
-	 * 
-	 * @param <T> The type of the result expected by the completed event.
-	 * @param type The type to check if subscribed to
-	 * @param m The subscribing micro-service.
-	 * @return returns if the service is subscired to this Event
-	 */
-	public <T> boolean isSubscribedToEvent(Class<? extends Event<T>> type, MicroService m){
-		return false;
-	}
-	/**
+    }
+
+    /**
+     * @param <T>  The type of the result expected by the completed event.
+     * @param type The type to check if subscribed to
+     * @param m    The subscribing micro-service.
+     * @return returns if the service is subscribed to this Event
+     * @pre: none
+     * @post: @pre(isSubscribedToEvent(Event,m)) == @post(isSubscribedToEvent(Event,m))
+     */
+    public <T> boolean isSubscribedToEvent(Class<? extends Event<T>> type, MicroService m) {
+        synchronized (eventLocker) {
+            if (eventMap.containsKey(type)) {
+                return eventMap.get(type).contains(m);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @Pre the MicroService is registered -> isRegistered(m) == true
+     * @Post the MicroService is subscribed to the broadcast -> isSubscribedToBroadcast(type,m)==true
+     * to this Broadcast MicroServices container in BroadcastMap
+     */
+    @Override
+    public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
+        synchronized (broadcastLocker) {
+            if (broadcastMap.containsKey(type)) {
+                broadcastMap.get(type).add(m);
+            } else {
+                HashSet<MicroService> broadcastList = new HashSet<MicroService>();
+                broadcastList.add(m);
+                broadcastMap.put(type, broadcastList);
+            }
+        }
+    }
+
+    /**
      * Subscribes {@code m} to receive {@link Broadcast}s of type {@code type}.
      * <p>
-     * @param type 	The type to subscribe to.
-     * @param m    	The subscribing micro-service.
-	 * @Pre the MicroService is registered
-	 * @Post the MicroService is subscribed to the broadcast -> m is aded 
-	 * to this Broadcast Microservices container in BroadcastMap
+     *
+     * @param type The type to subscribe to.
+     * @param m    The subscribing micro-service.
+     * @pre: none
+     * @post: @pre(isSubscribedToBroadcast(Event,m)) == @post(isSubscribedToBroadcast(Event,m))
      */
-	@Override
-	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-		// TODO Auto-generated method stub
+    public <T> boolean isSubscribedToBroadcast(Class<? extends Broadcast> type, MicroService m) {
+        synchronized (broadcastLocker) {
+            if (broadcastMap.containsKey(type)) {
+                return broadcastMap.get(type).contains(m);
+            }
+            return false;
+        }
+    }
 
-	}
-	public <T> boolean isSubscribedToBroadcast(Class<? extends Broadcast> type, MicroService m){
-		return false;
-	}
+    /**
+     * @pre: isComplete(e) == false
+     * @inv: isEventSent(e) == true
+     * @post: isComplete(e) == true
+     */
+    @Override
+    public <T> void complete(Event<T> e, T result) {
+        synchronized (futureLocker) {
+            if (futureMap.containsKey(e)) {
+                futureMap.get(e).resolve(result);
+            }
+        }
 
-	@Override
-	public <T> void complete(Event<T> e, T result) {
-		// TODO Auto-generated method stub
+    }
 
-	}
-	public <T> boolean isComplete(Event<T> e){
-		return false; 
-	}
 
-	@Override
-	public void sendBroadcast(Broadcast b) {
-		// TODO Auto-generated method stub
+    /**
+     * @return if the event future has been resolved
+     * @pre: None
+     * @post: @pre(isComplete(e)) == @post(isComplete(e))
+     */
+    public <T> boolean isComplete(Event<T> e) {
+        synchronized (futureLocker) {
+            if (futureMap.containsKey(e)) {
+                return futureMap.get(e).isDone();
+            }
+            return false;
+        }
+    }
 
-	}
-	public boolean isBroadcastSent(Broadcast b){
-		return false;
-	}
+    /**
+     * @pre: None
+     * @inv
+     * @post: all microServices subscribed to broadcast class received the message
+     */
+    @Override
+    public void sendBroadcast(Broadcast b) {
+        synchronized (broadcastLocker) {
+            if (broadcastMap.containsKey(b.getClass()) && !broadcastMap.get(b.getClass()).isEmpty())
+                synchronized (MSqueueLocker) {
+                    for (MicroService microService : broadcastMap.get(b.getClass())) {
+                        MSqueueMap.get(microService).add(b);
 
-	
-	@Override
-	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public <T> boolean isEventSent(Event<T> e){
-		return false;
-	}
+                    }
+                    MSqueueLocker.notifyAll();
+                }
 
-	@Override
-	public void register(MicroService m) {
-		// TODO Auto-generated method stub
+        }
+    }
 
-	}
+    /**
+     * @pre: None
+     * @post: one of the subscribed microServices has received the Event message
+     */
+    @Override
+    public <T> Future<T> sendEvent(Event<T> e) {
+        Future<T> future = null;
+        synchronized (eventLocker) {
+            if (eventMap.containsKey(getClass()) && !eventMap.get(e.getClass()).isEmpty()){
+                synchronized (MSqueueLocker) {
+                    MicroService m = eventMap.get(e.getClass()).poll();
+                    MSqueueMap.get(m).add(e);
+                    eventMap.get(e.getClass()).add(m);
 
-	public boolean isRegistered(MicroService m){
-		return false;
-	}
+                    synchronized (futureLocker){
+                        futureMap.put(e,new Future<T>());
+                         future = futureMap.get(e);
+                    }
+                    MSqueueLocker.notifyAll();
+                }
+            }
+        }
+        return future;
 
-	@Override
-	public void unregister(MicroService m) {
-		// TODO Auto-generated method stub
+    }
 
-	}
+    /**
+     * @pre: isRegistered(m) == false
+     * @post: isRegistered(m) == true
+     */
+    @Override
+    public void register(MicroService m) {
+        synchronized (MSqueueLocker) {
+            if (!isRegistered(m)) {
+                MSqueueMap.put(m, new LinkedList<>());
+            }
+        }
+    }
 
-	@Override
-	public Message awaitMessage(MicroService m) throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * @pre: None
+     * @post: @pre(isRegistered(m)) == @post(isRegistered(m))
+     */
+    public boolean isRegistered(MicroService m) {
+        synchronized (MSqueueLocker) {
+            return MSqueueMap.containsKey(m);
+        }
+    }
 
-	
+    /**
+     * @pre: isRegistered(m) == true
+     * @post: isRegistered(m) == false && all reference of m removed from the messageBus
+     */
+    @Override
+    public void unregister(MicroService m) {
+        synchronized (MSqueueLocker) {
+            if(!isRegistered(m)){
+                return;
+            }
+            MSqueueMap.remove(m);
+        }
+        synchronized (eventLocker){
+            for(Queue<MicroService> c : eventMap.values()){
+                c.remove(m);
+            }
+        }
+        synchronized (broadcastLocker){
+            for(HashSet<MicroService> hashSet : broadcastMap.values()){
+                hashSet.remove(m);
+            }
+        }
+    }
 
-}
+        /**
+         * @pre: None
+         * @inv: isRegistered(m) == true
+         */
+        @Override
+        public Message awaitMessage (MicroService m) throws InterruptedException {
+          synchronized (MSqueueLocker){
+              while (MSqueueMap.get(m).isEmpty()){
+                  MSqueueLocker.wait();
+              }
+              return MSqueueMap.get(m).poll();
+          }
+        }
+
+
+    }
