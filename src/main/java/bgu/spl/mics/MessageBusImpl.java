@@ -12,7 +12,6 @@ import java.util.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-    private static MessageBusImpl instance;
     private HashMap<MicroService, Queue<Message>> MSqueueMap;
     private HashMap<Class<? extends Event>, Queue<MicroService>> eventMap; //todo: check if queue is the best implement
     private HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
@@ -33,11 +32,12 @@ public class MessageBusImpl implements MessageBus {
         futureLocker = new Object();
     }
 
+    private static class SingletonHolder {
+        private static MessageBusImpl instance = new MessageBusImpl();
+    }
+
     public static MessageBusImpl getInstance() {
-        if (instance == null) {
-            instance = new MessageBusImpl();
-        }
-        return instance;
+        return SingletonHolder.instance;
     }
 
 
@@ -171,15 +171,15 @@ public class MessageBusImpl implements MessageBus {
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
         synchronized (eventLocker) {
-            if (eventMap.containsKey(getClass()) && !eventMap.get(e.getClass()).isEmpty()){
+            if (eventMap.containsKey(getClass()) && !eventMap.get(e.getClass()).isEmpty()) {
                 synchronized (MSqueueLocker) {
                     MicroService m = eventMap.get(e.getClass()).poll();
                     MSqueueMap.get(m).add(e);
                     eventMap.get(e.getClass()).add(m);
 
-                    synchronized (futureLocker){
-                        futureMap.put(e,new Future<T>());
-                         future = futureMap.get(e);
+                    synchronized (futureLocker) {
+                        futureMap.put(e, new Future<T>());
+                        future = futureMap.get(e);
                     }
                     MSqueueLocker.notifyAll();
                 }
@@ -219,36 +219,36 @@ public class MessageBusImpl implements MessageBus {
     @Override
     public void unregister(MicroService m) {
         synchronized (MSqueueLocker) {
-            if(!isRegistered(m)){
+            if (!isRegistered(m)) {
                 return;
             }
             MSqueueMap.remove(m);
         }
-        synchronized (eventLocker){
-            for(Queue<MicroService> c : eventMap.values()){
+        synchronized (eventLocker) {
+            for (Queue<MicroService> c : eventMap.values()) {
                 c.remove(m);
             }
         }
-        synchronized (broadcastLocker){
-            for(HashSet<MicroService> hashSet : broadcastMap.values()){
+        synchronized (broadcastLocker) {
+            for (HashSet<MicroService> hashSet : broadcastMap.values()) {
                 hashSet.remove(m);
             }
         }
     }
 
-        /**
-         * @pre: None
-         * @inv: isRegistered(m) == true
-         */
-        @Override
-        public Message awaitMessage (MicroService m) throws InterruptedException {
-          synchronized (MSqueueLocker){
-              while (MSqueueMap.get(m).isEmpty()){
-                  MSqueueLocker.wait();
-              }
-              return MSqueueMap.get(m).poll();
-          }
+    /**
+     * @pre: None
+     * @inv: isRegistered(m) == true
+     */
+    @Override
+    public Message awaitMessage(MicroService m) throws InterruptedException {
+        synchronized (MSqueueLocker) {
+            while (MSqueueMap.get(m).isEmpty()) {
+                MSqueueLocker.wait();
+            }
+            return MSqueueMap.get(m).poll();
         }
-
-
     }
+
+
+}

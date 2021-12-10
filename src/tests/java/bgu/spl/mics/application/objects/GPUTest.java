@@ -1,4 +1,5 @@
 package bgu.spl.mics.application.objects;
+
 import static org.junit.Assert.*;
 
 import org.junit.Before;
@@ -13,7 +14,6 @@ public class GPUTest {
     
     @Before
     public void setUp() throws Exception{
-        
         cluster = new Cluster();
         gpu = new GPU(GPU.Type.RTX3090,cluster);
         data = new Data(Data.Type.Images, 100);
