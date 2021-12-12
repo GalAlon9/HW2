@@ -27,6 +27,6 @@ public class GPUService extends MicroService {
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
 
-        subscribeBroadcast(TrainModelEvent.class, model -> );
+//        subscribeBroadcast(TrainModelEvent.class, model -> );
     }
 }

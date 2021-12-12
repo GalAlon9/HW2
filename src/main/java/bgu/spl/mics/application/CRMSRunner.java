@@ -95,8 +95,8 @@ public class CRMSRunner {
             JsonObject conferenceObject = conferenceElement.getAsJsonObject();
             String name = conferenceObject.get("name").getAsString();
             int date = conferenceObject.get("date").getAsInt();
-            ConfrenceInformation confrenceInformation = new ConfrenceInformation(name,date);
-            ConferenceService conferenceService = new ConferenceService("conference Service", confrenceInformation);
+            ConferenceInformation conferenceInformation = new ConferenceInformation(name,date);
+            ConferenceService conferenceService = new ConferenceService("conference Service", conferenceInformation);
             messageBus.register(conferenceService);
         }
     }

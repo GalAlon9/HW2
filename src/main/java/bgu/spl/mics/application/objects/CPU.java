@@ -21,9 +21,6 @@ public class CPU {
         currTick = 0;
     }
 
-    public CPU(int cores) {
-        cores = cores;
-    }
 
     /**
      * @inv the cpu can receive data to process
