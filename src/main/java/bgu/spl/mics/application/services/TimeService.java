@@ -24,7 +24,7 @@ public class TimeService extends MicroService{
 	int speed;
 	Timer timer;
 
-	private TimeService(int speed, int duration) {
+	public TimeService(int speed, int duration) {
 		super("TimeService");
 		currTick = 1;
 		this.speed = speed;
