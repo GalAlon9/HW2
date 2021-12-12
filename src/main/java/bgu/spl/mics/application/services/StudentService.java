@@ -22,6 +22,19 @@ public class StudentService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
-
+        // subscribe to terminate broadcast
+        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(PublishConfrenceBroadcast.class,c -> {});
+        for(Model model:this.student.getModels()){
+            trainMap.put(model,sendEvent(new TrainModelEvent(model)));
+        }
+        while(!trainMap.isEmpty()) {
+            for (Model model : trainMap.keySet()) {
+                if (trainMap.get(model).isDone()) {
+                    testMap.put(model, sendEvent(new TestModelEvent(model)));
+                    trainMap.remove(model);
+                }
+            }
+        }
     }
 }

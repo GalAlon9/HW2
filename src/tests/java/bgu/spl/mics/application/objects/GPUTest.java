@@ -17,7 +17,7 @@ public class GPUTest {
         cluster = Cluster.getInstance();
         gpu = new GPU(GPU.Type.RTX3090);
         data = new Data("Images", 100);
-        model = new Model();
+        model = new Model("model",data,null);
     }
     
     public void testExtractData(){

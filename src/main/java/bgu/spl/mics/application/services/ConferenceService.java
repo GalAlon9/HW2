@@ -24,6 +24,8 @@ public class ConferenceService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
+        // subscribe to terminate broadcast
+        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
 
     }
 }

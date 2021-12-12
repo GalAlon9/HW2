@@ -58,7 +58,13 @@ public class CRMSRunner {
             String department = currStudent.get("department").getAsString();
             String status = currStudent.get("status").getAsString();
             JsonArray models = (JsonArray)currStudent.get("models");
-            Student student1 = new Student(name,department,status);
+            Student student1;
+            if(status.equals("MSc")){
+                student1 = new Student(name,department, Student.Degree.MSc);
+            }
+            else{
+                student1 = new Student(name,department, Student.Degree.PhD);
+            }
             for(JsonElement model :models){
                 JsonObject currModel = model.getAsJsonObject();
                 String modelName = currModel.get("name").getAsString();
