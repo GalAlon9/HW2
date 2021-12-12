@@ -12,7 +12,7 @@ public class CPUTest {
      @Before
     public void setUp() throws Exception{
         cpu = new CPU(32,new Cluster(), 0);
-        dataBatch = new DataBatch(0, new Data(Data.Type.Text,1000));
+        dataBatch = new DataBatch(0, new Data(Data.Type.Text.toString(),1000));
 
     }
 

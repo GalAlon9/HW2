@@ -20,6 +20,11 @@ public class CPU {
         this.cluster = cluster;
         currTick = tick;
     }
+
+    public CPU(int cores) {
+        cores = cores;
+    }
+
     /**
      * @inv the cpu can receive data to process
      * @param dBatch - dataBatch to process

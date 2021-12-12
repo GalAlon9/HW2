@@ -16,7 +16,7 @@ public class GPUTest {
     public void setUp() throws Exception{
         cluster = new Cluster();
         gpu = new GPU(GPU.Type.RTX3090,cluster);
-        data = new Data(Data.Type.Images, 100);
+        data = new Data(Data.Type.Images.toString(), 100);
         model = new Model();
     }
     
