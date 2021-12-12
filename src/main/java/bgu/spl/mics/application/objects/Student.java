@@ -5,6 +5,17 @@ package bgu.spl.mics.application.objects;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class Student {
+    public Student(String name, String department, String status) {
+        name = name;
+    }
+
+    public void addModel(Model model1) {
+    }
+
+    public String getName() {
+        return name;
+    }
+
     /**
      * Enum representing the Degree the student is studying for.
      */

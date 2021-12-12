@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import com.google.gson.JsonElement;
+
 /**
  * Passive object representing a Deep Learning model.
  * Add all the fields described in the assignment as private fields.
@@ -7,4 +9,10 @@ package bgu.spl.mics.application.objects;
  */
 public class Model {
 
+    public Model(String modelName, Data data, Student student) {
+    }
+
+    public Model() {
+
+    }
 }
