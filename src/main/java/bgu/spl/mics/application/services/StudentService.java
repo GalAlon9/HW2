@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.*;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -20,6 +21,10 @@ public class StudentService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
+        // subscribe to terminate broadcast
+        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+
+//        subscribeBroadcast(new PublishConfrenceBroadcast());
 
     }
 }

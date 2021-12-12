@@ -1,4 +1,6 @@
 package bgu.spl.mics.application.messages;
 
-public class DataPreProcessEvent {
+import bgu.spl.mics.Event;
+
+public class DataPreProcessEvent implements Event {
 }

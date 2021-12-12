@@ -23,10 +23,9 @@ public class GPU {
     /**
      * 
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
-     * @param clstr The compute cluster
      */
-    public GPU (Type typ, Cluster clstr){
-        cluster = clstr;
+    public GPU (Type typ){
+        cluster = Cluster.getInstance();
         model = null;
         type = typ;
         VRAM_Capacity = type==Type.GTX1080?8: type==Type.RTX2080?16 :32;

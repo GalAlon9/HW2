@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.objects.GPU;
 
 /**
  * GPU service is responsible for handling the
@@ -12,15 +14,19 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class GPUService extends MicroService {
-
-    public GPUService(String name) {
-        super("Change_This_Name");
+    GPU gpu;
+    public GPUService(String name , GPU gpu) {
+        super(name);
         // TODO Implement this
+        this.gpu = gpu;
     }
 
     @Override
     protected void initialize() {
         // TODO Implement this
+        // subscribe to terminate broadcast
+        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
 
+        subscribeBroadcast(TrainModelEvent.class, model -> );
     }
 }
