@@ -12,4 +12,10 @@ public class ConferenceInformation {
         this.name = name;
         this.date = date;
     }
+    public int getStart(){
+        return start;
+    }
+    public int getFinish(){
+        return finish;
+    }
 }

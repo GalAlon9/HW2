@@ -9,7 +9,7 @@ import bgu.spl.mics.application.objects.Student;
  * {@link TestModelEvent} and {@link PublishResultsEvent}.
  * In addition, it must sign up for the conference publication broadcasts.
  * This class may not hold references for objects which it is not responsible for.
- *
+ * <p>
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
  */
@@ -24,17 +24,33 @@ public class StudentService extends MicroService {
         // TODO Implement this
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
-        subscribeBroadcast(PublishConfrenceBroadcast.class,c -> {});
-        for(Model model:this.student.getModels()){
-            trainMap.put(model,sendEvent(new TrainModelEvent(model)));
-        }
-        while(!trainMap.isEmpty()) {
-            for (Model model : trainMap.keySet()) {
-                if (trainMap.get(model).isDone()) {
-                    testMap.put(model, sendEvent(new TestModelEvent(model)));
-                    trainMap.remove(model);
+
+        subscribeBroadcast(PublishConferenceBroadcast.class, c -> {
+            int published = c.getPublished(student);
+            student.increasePublications(published);
+            int paperRead = c.getRead(student);
+            student.increasePapersRead(paperRead);
+        });
+// todo: maybe prioritize testModel in the queue
+
+        for(Model model : student.getModels()){
+            Future<Model.Status> trainFuture = trainModel(model);
+            if(trainFuture.get().equals(Model.Status.Trained)){
+                Future<Model.Result> testFuture = testModel(model);
+                if(testFuture.get().equals(Model.Result.Good)){
+                    publishResult(model);
                 }
             }
         }
+
+    }
+    private Future trainModel(Model model){
+        return sendEvent(new TrainModelEvent(model));
+    }
+    private Future testModel(Model model){
+        return sendEvent(new TestModelEvent(model));
+    }
+    private Future publishResult(Model model){
+        return sendEvent(new PublishResultsEvent(model));
     }
 }

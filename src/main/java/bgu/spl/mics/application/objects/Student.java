@@ -43,4 +43,14 @@ public class Student {
         return name;
     }
 
+    public void increasePublications(int i){
+        this.publications+=i;
+    }
+    public void increasePapersRead(int i){
+        this.papersRead+=i;
+    }
+    public Degree getStatus(){
+        return status;
+    }
+
 }

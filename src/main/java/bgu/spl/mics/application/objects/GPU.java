@@ -92,7 +92,8 @@ public class GPU {
     public boolean isDoneTraining(){
         return false;
     }
- 
+
+
 
 
 }
