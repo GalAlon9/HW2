@@ -14,11 +14,11 @@ public class CPU {
     private Cluster cluster;
     private int currTick;
 
-    public CPU(int cores , Cluster cluster , int tick){
+    public CPU(int cores){
         this.cores = cores;
         data = new LinkedList<DataBatch>();
-        this.cluster = cluster;
-        currTick = tick;
+        this.cluster = Cluster.getInstance();
+        currTick = 0;
     }
 
     public CPU(int cores) {

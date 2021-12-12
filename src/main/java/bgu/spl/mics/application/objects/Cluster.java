@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.objects;
 
 
+import bgu.spl.mics.MessageBusImpl;
+
 /**
  * Passive object representing the cluster.
  * <p>
@@ -14,9 +16,15 @@ public class Cluster {
 	/**
      * Retrieves the single instance of this class.
      */
+	private Cluster(){
+
+	}
 	public static Cluster getInstance() {
 		//TODO: Implement this
-		return null;
+		return SingletonHolder.instance;
+	}
+	private static class SingletonHolder {
+		private static Cluster instance = new Cluster();
 	}
 
 }
