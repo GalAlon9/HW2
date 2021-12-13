@@ -40,14 +40,13 @@ public class CPUTest {
         int startTick = cpu.getTick();
         //before
         assertFalse("Error if processed", dataBatch.IsProcessed());
-
-        DataBatch d = cpu.process();
+        cpu.process();
         cpu.updateTick(startTick + 1);
-        assertFalse("error if processed before time", d.IsProcessed());
+        assertFalse("error if processed before time", dataBatch.IsProcessed());
         cpu.updateTick(startTick + 2);
         //after
-        assertTrue("Error if not processed", d.IsProcessed());
-        assertEquals(startTick+cpu.TicksToProcess(d), cpu.getTick());
+        assertTrue("Error if not processed", dataBatch.IsProcessed());
+        assertEquals(startTick+cpu.TicksToProcess(dataBatch), cpu.getTick());
     }
 
     public void ticksTest(){

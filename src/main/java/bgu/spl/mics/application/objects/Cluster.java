@@ -1,8 +1,6 @@
 package bgu.spl.mics.application.objects;
 
 
-import bgu.spl.mics.MessageBusImpl;
-
 /**
  * Passive object representing the cluster.
  * <p>
@@ -16,15 +14,81 @@ public class Cluster {
 	/**
      * Retrieves the single instance of this class.
      */
-	private Cluster(){
+    private Cluster() {
+        gpus = new LinkedList<>();
+//        dataMap = new ConcurrentHashMap<>();
+        cpuMinHeap = new PriorityQueue<>(Comparator.comparingInt(CPU::getTimeToWait));
+        cpuTime = new AtomicInteger();
+        gpuTime = new AtomicInteger();
+        processedData = new AtomicInteger();
+        modelsTrained = new ConcurrentLinkedQueue<String>();
 
-	}
-	public static Cluster getInstance() {
-		//TODO: Implement this
-		return SingletonHolder.instance;
-	}
-	private static class SingletonHolder {
-		private static Cluster instance = new Cluster();
-	}
+    }
+
+    public static Cluster getInstance() {
+        return SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        private static final Cluster instance = new Cluster();
+    }
+
+    public void addCPU(CPU cpu) {
+        this.cpuMinHeap.add(cpu);
+    }
+
+    public void addGPU(GPU gpu) {
+        this.gpus.add(gpu);
+    }
+
+    public void receiveDataFromGPUSendToCPU(DataBatch db) {
+//        dataMap.put(db, gpu);
+        assert cpuMinHeap.peek() != null;
+        CPU receiver = cpuMinHeap.peek();
+        receiver.addData(db);
+    }
+
+    public void receiveDataFromCPUSendToGPU(DataBatch db) {
+        if(db.IsProcessed()) {
+            db.getGpu().receiveProcessedData(db);
+//            dataMap.remove(db);
+        }
+    }
+
+
+    public int getProcessedData() {
+        return processedData.get();
+    }
+
+    public int getCpuTime() {
+        return cpuTime.get();
+    }
+
+    public int getGpuTime() {
+        return gpuTime.get();
+    }
+
+    public Object[] getModelsTrained() {
+        return modelsTrained.toArray();
+    }
+
+    public void increaseGpuTime() {
+        gpuTime.incrementAndGet();
+    }
+
+    public void increaseCpuTime() {
+        cpuTime.incrementAndGet();
+    }
+
+    public void addModel(String model) {
+        modelsTrained.add(model);
+    }
+
+    public void increaseProcessedData() {
+        processedData.incrementAndGet();
+    }
+
 
 }
+
+

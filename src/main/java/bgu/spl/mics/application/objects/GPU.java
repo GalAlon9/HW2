@@ -23,7 +23,6 @@ public class GPU {
     private LinkedList<DataBatch> Disk;
     private LinkedList<DataBatch> VRAM;
     private int VRAM_Capacity;
-
     /**
      * 
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
@@ -34,8 +33,7 @@ public class GPU {
         type = typ;
         VRAM_Capacity = type==Type.GTX1080?8: type==Type.RTX2080?16 :32;
         Disk = new LinkedList<DataBatch>();
-        VRAM = new LinkedList<DataBatch>(); 
-
+        VRAM = new LinkedList<DataBatch>();
      }
      /**
      * @pre: model == null
@@ -93,6 +91,9 @@ public class GPU {
         return false;
     }
 
+    private void doneTrain(){
+        cluster.addModel(model.getName());
+    }
 
 
 

@@ -13,11 +13,11 @@ import bgu.spl.mics.application.objects.CPU;
  */
 public class CPUService extends MicroService {
     CPU cpu;
-    int tick = 0;
-    public CPUService(String name , CPU cpu) {
-        super("Change_This_Name");
-        // TODO Implement this
+    int tick;
+    public CPUService(CPU cpu) {
+        super("CPU service");
         this.cpu = cpu;
+        tick = 0;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class CPUService extends MicroService {
         subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
             tick = tickBroadcast.get();
             cpu.updateTick(tick);
-            // TODO: add more actions following tick update
+            if(!cpu.isProcessing())cpu.process();
         });
 
     }

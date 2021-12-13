@@ -25,7 +25,9 @@ public class Model {
     public enum Status {
         PreTrained, Training, Trained, Tested
     }
-
+    public String getName(){
+        return this.name;
+    }
     public enum Result {
         None, Good, Bad
     }

@@ -17,8 +17,8 @@ import java.util.Random;
  */
 public class GPUService extends MicroService {
     GPU gpu;
-    public GPUService(String name , GPU gpu) {
-        super(name);
+    public GPUService(GPU gpu) {
+        super("GPU service");
         // TODO Implement this
         this.gpu = gpu;
     }
