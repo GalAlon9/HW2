@@ -32,7 +32,7 @@ public class Cluster {
     private Cluster() {
         gpus = new LinkedList<>();
 //        dataMap = new ConcurrentHashMap<>();
-        cpuMinHeap = new PriorityQueue<>(Comparator.comparingInt(CPU::getTimeToWait));
+        cpuMinHeap = new PriorityQueue<>((a,b) -> Integer.compare(a.getTimeToWait(),b.getTimeToWait()));
         cpuTime = new AtomicInteger();
         gpuTime = new AtomicInteger();
         processedData = new AtomicInteger();

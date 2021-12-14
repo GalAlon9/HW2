@@ -44,6 +44,9 @@ public class GPU {
         currTick = 0;
         isTraining = false;
         gpuService = null;
+        testModelQueue = new LinkedList<>();
+        trainModelQueue = new LinkedList<>();
+
     }
 
     public void setGpuService(GPUService gpuService) {
@@ -121,16 +124,15 @@ public class GPU {
      * @inv: !vram.isEmpty() && getModel() != null
      * @post: @pre(data.proccesed) = @post(data.proccesed - 1)
      */
-    public void train() {
-        DataBatch processedDataBatch = VRAM.pop();
-
+    public synchronized void train() {
         if (!VRAM.isEmpty()) {
+            DataBatch processedDataBatch = VRAM.poll();
             isTraining = true;
             DataBatch data = this.VRAM.poll();
             int startTick = getTick();
             try {
                 while (getTick() < startTick + TicksToProcess()) {
-                    this.wait();
+                    wait();
                     cluster.increaseGpuTime();
                 }
             } catch (InterruptedException e) {
@@ -156,12 +158,14 @@ public class GPU {
     }
 
     private void doneTrain() {
-        currModel.setStatus(Model.Status.Trained);
-        gpuService.completeEvent(getModel());
-        cluster.addModel(currModel.getName()); // add model to trained models statistics
+        if(currModel != null){
+            currModel.setStatus(Model.Status.Trained);
+            gpuService.completeEvent(getModel());
+            cluster.addModel(currModel.getName()); // add model to trained models statistics
+        }
     }
 
-    public void updateTick(int tick) {
+    public synchronized void updateTick(int tick) {
         currTick = tick;
         notifyAll();
     }
@@ -185,7 +189,7 @@ public class GPU {
         if (isDoneTraining()) {//only when initializing or finish to train model
             testModels();
             setModel();
-            if(currModel !=null) {
+            if (currModel != null) {
                 prepareBatches();
                 sendToCluster();
             }
@@ -193,6 +197,7 @@ public class GPU {
         train();
 
     }
+
     // test the next models in the queue
     private void testModels() {
         while (!testModelQueue.isEmpty()) {
@@ -202,6 +207,7 @@ public class GPU {
             gpuService.completeEvent(model); // resolve the future of the testModelEvent
         }
     }
+
     // returns the result of the model
     private Model.Result getResult(Model model) {
         Random rnd = new Random();

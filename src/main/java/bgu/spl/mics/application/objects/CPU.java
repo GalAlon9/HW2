@@ -41,14 +41,14 @@ public class CPU {
      * @Pre the DataBatch isn't processed
      * @Post the DataBatch is processed
      */
-    public void process() {
+    public synchronized void process() {
         if (!dataQueue.isEmpty()) {
             isProcessing = true;
             DataBatch data = this.dataQueue.poll();
             int startTick = getTick();
             try {
                 while (getTick() < startTick + TicksToProcess(data)) {
-                    this.wait();
+                    wait();
                     timeToWait--;
                     cluster.increaseCpuTime();
                 }
@@ -68,7 +68,7 @@ public class CPU {
      * @pre: None
      * @post: currTick = tick
      */
-    public void updateTick(int tick) {
+    public synchronized void updateTick(int tick) {
         currTick = tick;
         notifyAll();
     }
