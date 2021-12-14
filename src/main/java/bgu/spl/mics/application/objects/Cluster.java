@@ -1,6 +1,15 @@
 package bgu.spl.mics.application.objects;
 
 
+import java.lang.reflect.Array;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Passive object representing the cluster.
  * <p>
@@ -9,9 +18,15 @@ package bgu.spl.mics.application.objects;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class Cluster {
+    private List<GPU> gpus;
+//    private ConcurrentHashMap<DataBatch, GPU> dataMap;
+    private PriorityQueue<CPU> cpuMinHeap;
+    private AtomicInteger cpuTime;
+    private ConcurrentLinkedQueue<String> modelsTrained;
+    private AtomicInteger processedData;
+    private AtomicInteger gpuTime;
 
-
-	/**
+    /**
      * Retrieves the single instance of this class.
      */
     private Cluster() {

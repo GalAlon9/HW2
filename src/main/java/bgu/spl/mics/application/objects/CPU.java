@@ -13,12 +13,17 @@ public class CPU {
     private Queue<DataBatch> dataQueue;
     private Cluster cluster;
     private int currTick;
+    private int timeToWait;
+    private boolean isProcessing;
 
     public CPU(int cores) {
         this.cores = cores;
         dataQueue = new LinkedList<DataBatch>();
         this.cluster = Cluster.getInstance();
         currTick = 0;
+        timeToWait = 0;
+        isProcessing = false;
+
     }
 
 
@@ -65,6 +70,7 @@ public class CPU {
      */
     public void updateTick(int tick) {
         currTick = tick;
+        notifyAll();
     }
 
     public int getTick() {
@@ -76,12 +82,10 @@ public class CPU {
      *                  how many ticks required to process the data
      * @return how many ticks required to process the data
      */
-    public int TicksToProcess(DataBatch dataBatch){
-        // if(dataBatch.getData().getType() == Data.Type.Images) return(32/cores)*4;
-        // if(dataBatch.getData().getType() == Data.Type.Text) return(32/cores)*2;
-        // else return 32/cores;
-        return 0;
-
+    public int TicksToProcess(DataBatch dataBatch) {
+        if (dataBatch.getData().getType() == Data.Type.Images) return (32 / cores) * 4;
+        if (dataBatch.getData().getType() == Data.Type.Text) return (32 / cores) * 2;
+        else return 32 / cores;
     }
 
     public int getTimeToWait() {

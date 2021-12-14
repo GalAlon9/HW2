@@ -1,8 +1,11 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.objects.Student;
+import bgu.spl.mics.application.objects.*;
+
+import java.util.HashMap;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -14,9 +17,18 @@ import bgu.spl.mics.application.objects.Student;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    public StudentService(String name, Student student) {
-        super("Change_This_Name");
-        // TODO Implement this
+    private String name;
+    private Student student;
+//    private HashMap<Model, Future> trainMap;
+//    private HashMap<Model, Future> testMap;
+//    private HashMap<Model, Future> publishedMap;
+
+    public StudentService(Student student) {
+        super("student service");
+        this.student = student;
+//        this.trainMap = new HashMap<>();
+//        this.testMap = new HashMap<>();
+//        this.publishedMap = new HashMap<>();
     }
 
     @Override

@@ -1,11 +1,10 @@
 package bgu.spl.mics.application;
 import java.io.*;
 import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import bgu.spl.mics.MessageBusImpl;
+import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;
@@ -31,27 +30,29 @@ public class CRMSRunner {
             JsonArray conferences = (JsonArray)jsonObject.get("Conferences");
             int tickTime = jsonObject.get("TickTime").getAsInt();
             int duration = jsonObject.get("Duration").getAsInt();
+
+            List<MicroService> msList = new LinkedList<MicroService>();
+
+
+
+            studentsInitialize(students,msList);
+            GPUSInitialize(GPUs,msList);
+            CPUSInitialize(CPUs,msList);
+            ConferencesInitialize(conferences,msList);
             TimeService timeService = new TimeService(tickTime,duration);
+            msList.add(timeService);
 
-
-            MessageBusImpl messageBus = MessageBusImpl.getInstance();
-
-            messageBus.register(timeService);
-
-            studentsInitialize(students,messageBus);
-            GPUSInitialize(GPUs,messageBus);
-            CPUSInitialize(CPUs,messageBus);
-            ConferencesInitialize(conferences,messageBus);
-
-
-
+            for(MicroService microService : msList){//starts all the threads and initializes all the services
+                Thread thread = new Thread(microService);
+                thread.start();
+            }
 
         }catch (FileNotFoundException exception){
             System.out.println("file didn't found");
         }
     }
 
-    public static void studentsInitialize(JsonArray students,MessageBusImpl messageBus){
+    public static void studentsInitialize(JsonArray students,List msList){
         for(JsonElement student: students){
             JsonObject currStudent = student.getAsJsonObject();
             String name = currStudent.get("name").getAsString();
@@ -74,36 +75,43 @@ public class CRMSRunner {
                 Model model1 = new Model(modelName,data,student1);
                 student1.addModel(model1);
             }
-            messageBus.register(new StudentService(student1.getName(),student1));
+            StudentService studentService = new StudentService(student1);
+            msList.add(studentService);
         }
     }
 
-    public static void GPUSInitialize(JsonArray GPUs,MessageBusImpl messageBus){
+    public static void GPUSInitialize(JsonArray GPUs,List msList){
+        Cluster cluster = Cluster.getInstance();
         for(JsonElement gpu: GPUs){
             String GPUType = gpu.getAsString();
             GPU gpu1 = new GPU(GPUType);
-            GPUService gpuService = new GPUService(GPUType,gpu1);
-            messageBus.register(gpuService);
+            GPUService gpuService = new GPUService(gpu1);
+            cluster.addGPU(gpu1);
+            msList.add(gpuService);
         }
     }
 
-    public static void CPUSInitialize(JsonArray CPUs, MessageBusImpl messageBus){
+    public static void CPUSInitialize(JsonArray CPUs,List msList){
+        Cluster cluster = Cluster.getInstance();
         for(JsonElement cpu : CPUs){
             int cores = cpu.getAsInt();
             CPU cpu1 = new CPU(cores);
-            CPUService cpuService = new CPUService("CPU service",cpu1);
-            messageBus.register(cpuService);
+            CPUService cpuService = new CPUService(cpu1);
+            cluster.addCPU(cpu1);
+            msList.add(cpuService);
         }
     }
 
-    public static void ConferencesInitialize(JsonArray conferences, MessageBusImpl messageBus){
+    public static void ConferencesInitialize(JsonArray conferences,List msList){
+        int start = 0;
         for(JsonElement conferenceElement : conferences){
             JsonObject conferenceObject = conferenceElement.getAsJsonObject();
             String name = conferenceObject.get("name").getAsString();
-            int date = conferenceObject.get("date").getAsInt();
-            ConferenceInformation conferenceInformation = new ConferenceInformation(name,date);
-            ConferenceService conferenceService = new ConferenceService("conference Service", conferenceInformation);
-            messageBus.register(conferenceService);
+            int finish = conferenceObject.get("date").getAsInt();
+            ConferenceInformation conferenceInformation = new ConferenceInformation(name,start,finish);
+            ConferenceService conferenceService = new ConferenceService(conferenceInformation);
+            msList.add(conferenceService);
+            start = finish;
         }
     }
 

@@ -9,7 +9,6 @@ import java.util.Random;
 /**
  * GPU service is responsible for handling the
  * {@link TrainModelEvent} and {@link TestModelEvent},
- * in addition to sending the {@link DataPreProcessEvent}.
  * This class may not hold references for objects which it is not responsible for.
  * <p>
  * You can add private fields and public methods to this class.
@@ -31,7 +30,24 @@ public class GPUService extends MicroService {
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
 
-//        subscribeBroadcast(TrainModelEvent.class, model -> );
+       subscribeEvent(TrainModelEvent.class, modelEvent -> {
+           gpu.setModel(modelEvent.getModel());
+
+       });
+        subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
+            tick = tickBroadcast.get();
+            gpu.updateTick(tick);
+//            if(!gpu.isProcessing()){
+//                gpu.t();
+//            }
+        });
+
+       subscribeEvent(TestModelEvent.class, testModelEvent -> {
+            Model model = testModelEvent.getModel();
+            Model.Result result = Result(model);
+            model.setResult(result);
+            complete(testModelEvent , result);
+       });
     }
 
     private Model.Result Result(Model model){
