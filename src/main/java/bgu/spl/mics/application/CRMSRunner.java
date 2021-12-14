@@ -1,14 +1,17 @@
 package bgu.spl.mics.application;
-import java.io.*;
-import java.lang.reflect.Type;
-import java.util.*;
 
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.services.*;
-import com.google.gson.*;
-import jdk.internal.util.xml.impl.Input;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /** This is the Main class of Compute Resources Management System application. You should parse the input file,
@@ -17,7 +20,7 @@ import jdk.internal.util.xml.impl.Input;
  */
 public class CRMSRunner {
     public static void main(String[] args) {
-        initializeAll(args[0]);
+        initializeAll("example_input.json");
     }
 
     public static void initializeAll(String path){
@@ -84,7 +87,8 @@ public class CRMSRunner {
         Cluster cluster = Cluster.getInstance();
         for(JsonElement gpu: GPUs){
             String GPUType = gpu.getAsString();
-            GPU gpu1 = new GPU(GPUType);
+            GPU.Type type = GPUType.equals("RTX3090")? GPU.Type.RTX3090 : GPUType.equals("RTX2080")? GPU.Type.RTX2080 : GPU.Type.GTX1080;
+            GPU gpu1 = new GPU(type);
             GPUService gpuService = new GPUService(gpu1);
             cluster.addGPU(gpu1);
             msList.add(gpuService);

@@ -23,7 +23,8 @@ public class GPUTest {
     public void testExtractData(){
         //setup
         DataBatch db;
-        gpu.setModel(model);
+        gpu.addTrainModel(model);
+        gpu.setModel();
         //set
         db = gpu.extractBatchesFromDisk();
         //after
@@ -33,7 +34,8 @@ public class GPUTest {
         //before
         assertNull("some model has been assigned",gpu.getModel());
         //set
-        gpu.setModel(model);
+        gpu.addTrainModel(model);
+        gpu.setModel();
         //after
         assertNotNull("no model has been assigned to the gpu",gpu.getModel());
     }

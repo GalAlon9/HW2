@@ -1,10 +1,12 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Event;
+import bgu.spl.mics.Message;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  * GPU service is responsible for handling the
@@ -15,13 +17,16 @@ import java.util.Random;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class GPUService extends MicroService {
-    GPU gpu;
-    int tick;
+    private GPU gpu;
+    private int tick;
+    private HashMap<Model , Event> modelMap;
     public GPUService(GPU gpu) {
         super("GPU service");
         // TODO Implement this
         this.gpu = gpu;
+        gpu.setGpuService(this);
         tick = 0;
+        modelMap = new HashMap<>();
     }
 
     @Override
@@ -31,31 +36,38 @@ public class GPUService extends MicroService {
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
 
        subscribeEvent(TrainModelEvent.class, modelEvent -> {
-           gpu.setModel(modelEvent.getModel());
+           Model model = modelEvent.getModel();
+           gpu.addTrainModel(model);
+           modelMap.put(model,modelEvent);
 
        });
         subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
             tick = tickBroadcast.get();
             gpu.updateTick(tick);
-//            if(!gpu.isProcessing()){
-//                gpu.t();
-//            }
+            if(!gpu.isTraining()){
+                gpu.work();
+            }
         });
 
-       subscribeEvent(TestModelEvent.class, testModelEvent -> {
-            Model model = testModelEvent.getModel();
-            Model.Result result = Result(model);
-            model.setResult(result);
-            complete(testModelEvent , result);
+       subscribeEvent(TestModelEvent.class, modelEvent -> {
+            Model model = modelEvent.getModel();
+            gpu.addTestModel(model);
+            modelMap.put(model,modelEvent);
        });
+
+    }
+    public void completeEvent(Model model){
+        Event event = modelMap.get(model);
+        if(event.getClass() == TrainModelEvent.class) {
+            complete(event, model.getStatus());
+        }
+        else{ // testModel event
+            complete(event, model.getResult());
+        }
+        modelMap.remove(model);
+
+
     }
 
-    private Model.Result Result(Model model){
-        Random rnd = new Random();
-        double prob = rnd.nextDouble();
-        if(model.getStudent().getStatus().equals(Student.Degree.MSc)){
-            return prob <= 0.6 ? Model.Result.Good : Model.Result.Bad;
-        }
-        else return prob <= 0.8 ? Model.Result.Good : Model.Result.Bad;
-    }
+
 }

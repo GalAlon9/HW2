@@ -35,4 +35,5 @@ public class Data {
     public Type getType() {
         return type;
     }
+    public void increaseProcessed() {processed +=1000;}
 }
