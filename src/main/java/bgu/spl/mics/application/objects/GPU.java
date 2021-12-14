@@ -18,34 +18,46 @@ public class GPU {
     enum Type {RTX3090, RTX2080, GTX1080}
 
     private Type type;
-    private Model model;
+    private Model currModel;
     private Cluster cluster;
     private LinkedList<DataBatch> Disk;
     private LinkedList<DataBatch> VRAM;
     private int VRAM_Capacity;
+    private int currTick;
+    private boolean isProcessing;
     /**
-     * 
+     *
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
      */
     public GPU (Type typ){
         cluster = Cluster.getInstance();
-        model = null;
+        currModel = null;
         type = typ;
         VRAM_Capacity = type==Type.GTX1080?8: type==Type.RTX2080?16 :32;
         Disk = new LinkedList<DataBatch>();
         VRAM = new LinkedList<DataBatch>();
+        currTick = 0;
+        isProcessing = false;
      }
-     /**
+
+     public void sendToCluster(){
+         if(!Disk.isEmpty() && getCapacity() > 0){
+             VRAM_Capacity--;
+             DataBatch unProcessedData = extractBatchesFromDisk();
+             cluster.receiveDataFromGPUSendToCPU(unProcessedData);
+         }
+     }
+    /**
      * @pre: model == null
      * @post: this.model = model
      */
      // the gpu service assign the model to the gpu
      public void setModel(Model model){
-         this.model = model;
+         this.currModel = model;
          // preparebatches()
      }
      public Model getModel(){
-         return this.model;
+         return this.currModel;
      }
 
      public int getCapacity(){
@@ -60,7 +72,7 @@ public class GPU {
     // gets the un-processed data batch from the disk
     
     public DataBatch extractBatchesFromDisk(){
-        return null;
+        return Disk.poll();
     }
 
     /**
@@ -69,7 +81,7 @@ public class GPU {
      */
     //gets the processed data from cluster and puts it in VRAM
     public void receiveProcessedData(DataBatch processedDataBatch){
-
+        VRAM.add(processedDataBatch);
     }
     // prepare batches from model.data and insert the batches into the disk
     private void prepareBatches(){
@@ -83,6 +95,22 @@ public class GPU {
     public void train(){
         // processedDataBatch = vram.pop()
         // data.proccesed += processedDataBatch from vram
+        if (!VRAM.isEmpty()) {
+            isProcessing = true;
+            DataBatch data = this.VRAM.poll();
+            int startTick = getTick();
+            try {
+                while (getTick() < startTick + TicksToProcess()) {
+                    this.wait();
+                    cluster.increaseGpuTime();
+                }
+            } catch (InterruptedException e) {
+            }
+            isProcessing = false;
+        }
+//        if(Disk.isEmpty()){
+//            doneTrain();
+//        }
     }
     /**
     * @return if training is done -> data.proccesed == data.size
@@ -92,9 +120,23 @@ public class GPU {
     }
 
     private void doneTrain(){
-        cluster.addModel(model.getName());
+        cluster.addModel(currModel.getName());
     }
 
-
+    public void updateTick(int tick) {
+        currTick = tick;
+        notifyAll();
+    }
+    public boolean isProcessing(){
+        return isProcessing;
+    }
+    private int TicksToProcess() {
+        if (type == Type.RTX3090) return 1;
+        if (type == Type.RTX2080) return 2;
+        else return 4;
+    }
+    private int getTick(){
+        return currTick;
+    }
 
 }

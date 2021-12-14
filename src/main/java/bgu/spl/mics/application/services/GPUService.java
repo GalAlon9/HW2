@@ -17,10 +17,12 @@ import java.util.Random;
  */
 public class GPUService extends MicroService {
     GPU gpu;
+    int tick;
     public GPUService(GPU gpu) {
         super("GPU service");
         // TODO Implement this
         this.gpu = gpu;
+        tick = 0;
     }
 
     @Override
