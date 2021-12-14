@@ -170,7 +170,7 @@ public class MessageBusImpl implements MessageBus {
     public <T> Future<T> sendEvent(Event<T> e) {
         Future<T> future = null;
         synchronized (eventLocker) {
-            if (eventMap.containsKey(getClass()) && !eventMap.get(e.getClass()).isEmpty()) {
+            if (eventMap.containsKey(e.getClass()) && !eventMap.get(e.getClass()).isEmpty()) {
                 synchronized (MSqueueLocker) {
                     MicroService m = eventMap.get(e.getClass()).poll();
                     MSqueueMap.get(m).add(e);
