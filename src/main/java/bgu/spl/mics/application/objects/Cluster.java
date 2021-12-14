@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Cluster {
     private List<GPU> gpus;
 //    private ConcurrentHashMap<DataBatch, GPU> dataMap;
-    private PriorityQueue<CPU> cpuMinHeap;
+    private final PriorityQueue<CPU> cpuMinHeap;
     private AtomicInteger cpuTime;
     private ConcurrentLinkedQueue<String> modelsTrained;
     private AtomicInteger processedData;
@@ -32,11 +32,11 @@ public class Cluster {
     private Cluster() {
         gpus = new LinkedList<>();
 //        dataMap = new ConcurrentHashMap<>();
-        cpuMinHeap = new PriorityQueue<>((a,b) -> Integer.compare(a.getTimeToWait(),b.getTimeToWait()));
+        cpuMinHeap = new PriorityQueue<>(Comparator.comparingInt(CPU::getTimeToWait));
         cpuTime = new AtomicInteger();
         gpuTime = new AtomicInteger();
         processedData = new AtomicInteger();
-        modelsTrained = new ConcurrentLinkedQueue<String>();
+        modelsTrained = new ConcurrentLinkedQueue<>();
 
     }
 
@@ -83,8 +83,8 @@ public class Cluster {
         return gpuTime.get();
     }
 
-    public Object[] getModelsTrained() {
-        return modelsTrained.toArray();
+    public ConcurrentLinkedQueue<String> getModelsTrained() {
+        return modelsTrained;
     }
 
     public void increaseGpuTime() {

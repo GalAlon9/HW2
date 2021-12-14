@@ -35,6 +35,9 @@ public class ConferenceInformation {
         size++;
     }
     public int getPublishedByStudent(Student student){
+        if(!publicationsByStudent.containsKey(student)){
+            return 0;
+        }
         return publicationsByStudent.get(student);
     }
 

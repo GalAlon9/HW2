@@ -2,8 +2,6 @@ package bgu.spl.mics.application.objects;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
 
 public class CPUTest {
     private static CPU cpu;
@@ -11,7 +9,7 @@ public class CPUTest {
     
      @Before
     public void setUp() throws Exception{
-        cpu = new CPU(32);
+        cpu = new CPU(1, 32);
         dataBatch = new DataBatch(0, new Data("Text",1000));
 
     }
@@ -46,11 +44,11 @@ public class CPUTest {
         cpu.updateTick(startTick + 2);
         //after
         assertTrue("Error if not processed", dataBatch.IsProcessed());
-        assertEquals(startTick+cpu.TicksToProcess(dataBatch), cpu.getTick());
+        assertEquals(startTick+cpu.ticksToProcess(dataBatch), cpu.getTick());
     }
 
     public void ticksTest(){
-        assertEquals("Expected 2", 2 ,cpu.TicksToProcess(dataBatch));
+        assertEquals("Expected 2", 2 ,cpu.ticksToProcess(dataBatch));
     }
     
 

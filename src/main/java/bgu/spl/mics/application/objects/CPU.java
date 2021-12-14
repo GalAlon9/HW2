@@ -9,23 +9,25 @@ import java.util.*;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class CPU {
+    private int id;
     private int cores;
     private Queue<DataBatch> dataQueue;
     private Cluster cluster;
     private int currTick;
     private int timeToWait;
     private boolean isProcessing;
+    private Object cpuLock;
 
-    public CPU(int cores) {
+    public CPU(int id, int cores) {
+        this.id = id;
         this.cores = cores;
-        dataQueue = new LinkedList<DataBatch>();
+        this.dataQueue = new LinkedList<>();
         this.cluster = Cluster.getInstance();
-        currTick = 0;
-        timeToWait = 0;
-        isProcessing = false;
-
+        this.currTick = 0;
+        this.timeToWait = 0;
+        this.isProcessing = false;
+        this.cpuLock = new Object();
     }
-
 
     /**
      * @param dBatch - dataBatch to process
@@ -33,7 +35,7 @@ public class CPU {
      */
     public void addData(DataBatch dBatch) {
         dataQueue.add(dBatch);
-        timeToWait += TicksToProcess(dBatch);
+        timeToWait += ticksToProcess(dBatch);
     }
 
     /**
@@ -41,26 +43,30 @@ public class CPU {
      * @Pre the DataBatch isn't processed
      * @Post the DataBatch is processed
      */
-    public synchronized void process() {
+    public void process() {
         if (!dataQueue.isEmpty()) {
             isProcessing = true;
             DataBatch data = this.dataQueue.poll();
             int startTick = getTick();
-            try {
-                while (getTick() < startTick + TicksToProcess(data)) {
-                    wait();
+            while (getTick() < startTick + ticksToProcess(data)) {
+                try {
+                    synchronized (cpuLock) {
+                        cpuLock.wait();
+                    }
                     timeToWait--;
                     cluster.increaseCpuTime();
+                } catch (InterruptedException e) {
                 }
-                data.process();
-                cluster.increaseProcessedData();
-            } catch (InterruptedException e) {
             }
+            System.out.println("out");
+            data.process();
+            cluster.increaseProcessedData();
             isProcessing = false;
             cluster.receiveDataFromCPUSendToGPU(data);
         }
     }
-    public boolean isProcessing(){
+
+    public boolean isProcessing() {
         return isProcessing;
     }
 
@@ -68,9 +74,11 @@ public class CPU {
      * @pre: None
      * @post: currTick = tick
      */
-    public synchronized void updateTick(int tick) {
-        currTick = tick;
-        notifyAll();
+    public void updateTick(int tick) {
+        synchronized (cpuLock) {
+            currTick = tick;
+            cpuLock.notifyAll();
+        }
     }
 
     public int getTick() {
@@ -82,10 +90,15 @@ public class CPU {
      *                  how many ticks required to process the data
      * @return how many ticks required to process the data
      */
-    public int TicksToProcess(DataBatch dataBatch) {
-        if (dataBatch.getData().getType() == Data.Type.Images) return (32 / cores) * 4;
-        if (dataBatch.getData().getType() == Data.Type.Text) return (32 / cores) * 2;
-        else return 32 / cores;
+    public int ticksToProcess(DataBatch dataBatch) {
+        if (dataBatch.getData().getType() == Data.Type.Images) {
+            return (32 / cores) * 4;
+        }
+        if (dataBatch.getData().getType() == Data.Type.Text) {
+            return (32 / cores) * 2;
+        } else {
+            return 32 / cores;
+        }
     }
 
     public int getTimeToWait() {

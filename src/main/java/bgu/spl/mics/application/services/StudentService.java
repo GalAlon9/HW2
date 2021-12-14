@@ -47,13 +47,16 @@ public class StudentService extends MicroService {
 
         for(Model model : student.getModels()){
             Future<Model.Status> trainFuture = trainModel(model);
-            Model.Status status = trainFuture.get();
-            if(status.equals(Model.Status.Trained)){
-                Future<Model.Result> testFuture = testModel(model);
-                if(testFuture.get().equals(Model.Result.Good)){
-                    publishResult(model);
+            if(trainFuture != null) { // todo: fix this line
+                Model.Status status = trainFuture.get();
+                if(status.equals(Model.Status.Trained)){
+                    Future<Model.Result> testFuture = testModel(model);
+                    if(testFuture.get().equals(Model.Result.Good)){
+                        publishResult(model);
+                    }
                 }
             }
+
         }
 
     }
