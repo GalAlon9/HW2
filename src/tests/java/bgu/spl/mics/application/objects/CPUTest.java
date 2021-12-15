@@ -12,6 +12,7 @@ public class CPUTest {
     public void setUp(){
         cpu = new CPU(32);
         dataBatch = new DataBatch(0, new Data("Text",1000));
+        dataBatch.setGpu(new GPU(GPU.Type.RTX3090));
 
     }
     @Test

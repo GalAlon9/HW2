@@ -69,8 +69,6 @@ public class GPU {
         if (!trainModelQueue.isEmpty()) {
             this.currModel = trainModelQueue.poll();
             currModel.setStatus(Model.Status.Training);
-            prepareBatches();
-            sendToCluster();
         }
     }
 
@@ -103,7 +101,7 @@ public class GPU {
     }
 
     // prepare batches from model.data and insert the batches into the disk
-    private void prepareBatches() {
+    public void prepareBatches() {
         for (int i = 0; i < currModel.getData().Size(); i += 1000) {
             DataBatch db = new DataBatch(i, currModel.getData());
             db.setGpu(this);
@@ -158,6 +156,8 @@ public class GPU {
             doneTrainingModel();
             testModels(); // test next models if available
             setNextModel(); // train the the next model
+            prepareBatches();
+            sendToCluster();
         }
         train();
     }
