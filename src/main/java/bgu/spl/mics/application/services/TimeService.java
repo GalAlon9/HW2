@@ -3,6 +3,8 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.objects.Cluster;
+import bgu.spl.mics.application.objects.OutputResults.OutputJson;
 
 import java.sql.Time;
 import java.time.Clock;
@@ -45,11 +47,16 @@ public class TimeService extends MicroService {
                 currTick++;
                 if (currTick < duration) {
 					sendBroadcast(new TickBroadcast(currTick));
+
                 }
-				// reached end of the duration - terminate all processes
+				// reached end of the duration - terminate all processes, and collect time results to the output
                 else {
 					sendBroadcast(new TerminateBroadcast());
                     timer.cancel();
+
+                    OutputJson.getInstance().setCPUTime(Cluster.getInstance().getCpuTime());
+                    OutputJson.getInstance().setGPUTime(Cluster.getInstance().getGpuTime());
+                    OutputJson.getInstance().setBatches(Cluster.getInstance().getProcessedData());
                 }
             }
         }, speed, speed);

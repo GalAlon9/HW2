@@ -55,4 +55,11 @@ public class Model {
     public void setResult(Result result) {
         this.result = result;
     }
+
+    public String statusToString(){
+        return status.equals(Status.PreTrained)? "PreTrained" : status.equals(Status.Tested)? "Tested" : status.equals(Status.Training)? "Training":"Tested";
+    }
+    public String resultToString(){
+        return result.equals(Result.Bad)? "Bad" :result.equals(Result.Good)? "Good":"None";
+    }
 }

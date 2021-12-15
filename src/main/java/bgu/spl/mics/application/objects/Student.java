@@ -52,5 +52,9 @@ public class Student {
     public Degree getStatus(){
         return status;
     }
+    public String getDepartment(){return department;}
+    public int getPublications(){return publications;}
+    public int getPapersRead(){return papersRead;}
+    public String statusToString(){return status.equals(Degree.MSc)?"MSc":"PhD";}
 
 }

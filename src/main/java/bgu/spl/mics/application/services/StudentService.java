@@ -4,8 +4,12 @@ import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
+import bgu.spl.mics.application.objects.OutputResults.ModelRes;
+import bgu.spl.mics.application.objects.OutputResults.OutputJson;
+import bgu.spl.mics.application.objects.OutputResults.StudentRes;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -56,8 +60,19 @@ public class StudentService extends MicroService {
                     }
                 }
             }
-
         }
+        //after the run collect results by student
+        LinkedList<ModelRes> modelResLinkedList = new LinkedList<>();
+        for(Model model:student.getModels()){
+            if(model.getStatus()== Model.Status.Tested||model.getStatus()== Model.Status.Trained){
+                ModelRes modelRes = new ModelRes(model.getName(), model.getData(), model.statusToString(), model.resultToString());
+                modelResLinkedList.add(modelRes);
+            }
+        }
+        StudentRes studentRes = new StudentRes(this.student.getName(),this.student.getDepartment(),this.student.statusToString(),
+                this.student.getPublications(),this.student.getPapersRead(),modelResLinkedList);
+        OutputJson.getInstance().addStudentRes(studentRes);
+
 
     }
     private Future trainModel(Model model){

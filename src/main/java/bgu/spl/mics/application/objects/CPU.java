@@ -16,7 +16,7 @@ public class CPU {
     private int currTick;
     private int timeToWait;
     private boolean isProcessing;
-    private Object cpuLock;
+    public Object cpuLock;
 
     public CPU(int id, int cores) {
         this.id = id;

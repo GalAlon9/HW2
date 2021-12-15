@@ -3,6 +3,12 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.ConferenceInformation;
+import bgu.spl.mics.application.objects.Model;
+import bgu.spl.mics.application.objects.OutputResults.ConferenceRes;
+import bgu.spl.mics.application.objects.OutputResults.ModelRes;
+import bgu.spl.mics.application.objects.OutputResults.OutputJson;
+
+import java.util.LinkedList;
 
 /**
  * Conference service is in charge of
@@ -41,8 +47,15 @@ public class ConferenceService extends MicroService {
                 conference.addPublication(results.getModel());
             });
         }
-        if(currTick == conference.getFinish()){
+        if(currTick == conference.getFinish()){//add hte conference results to the output file and terminate
             sendBroadcast(new PublishConferenceBroadcast(conference));
+            LinkedList models = new LinkedList();
+
+            for(Model m : this.conference.getModelList()){
+                models.add(new ModelRes(m.getName(), m.getData(), m.statusToString(),m.resultToString()));
+            }
+            ConferenceRes conferenceRes = new ConferenceRes(conference.getName(),conference.getDate(),models);
+            OutputJson.getInstance().addConferenceRes(conferenceRes);
             terminate();
         }
     }

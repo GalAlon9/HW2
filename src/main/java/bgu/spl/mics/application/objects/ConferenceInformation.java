@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.objects;
 
+import java.awt.*;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Passive object representing information on a conference.
@@ -14,6 +16,7 @@ public class ConferenceInformation {
     private int size;
     private int start;
     private int finish;
+    private LinkedList<Model> modelList;
 
     public ConferenceInformation(String name, int start, int finish) {
         this.name = name;
@@ -21,9 +24,11 @@ public class ConferenceInformation {
         size = 0;
         this.start = start;
         this.finish = finish;
+        this.modelList = new LinkedList<>();
     }
 
     public void addPublication(Model model){
+        modelList.add(model);
         Student student = model.getStudent();
         if(publicationsByStudent.containsKey(student)){
             int num = publicationsByStudent.get(student);
@@ -40,6 +45,7 @@ public class ConferenceInformation {
         }
         return publicationsByStudent.get(student);
     }
+    public LinkedList<Model> getModelList(){return modelList;}
 
     public int getSize(){
         return size;
@@ -50,4 +56,6 @@ public class ConferenceInformation {
     public int getFinish(){
         return finish;
     }
+    public String getName(){return name;}
+    public int getDate(){return date;}
 }

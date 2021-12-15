@@ -38,6 +38,9 @@ public class CRMSRunner {
             e.printStackTrace();
         }
 
+        JsonObject jsonOutPut = new JsonObject();
+        JsonArray students = new JsonArray();
+
         System.out.println("cpu time used " + Cluster.getInstance().
 
                 getCpuTime());
