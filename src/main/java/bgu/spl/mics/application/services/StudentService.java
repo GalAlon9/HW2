@@ -39,7 +39,10 @@ public class StudentService extends MicroService {
     protected void initialize() {
         // TODO Implement this
         // subscribe to terminate broadcast
-        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, t -> {
+            terminate();
+            System.out.println("student " + student.getName() + " terminated");
+        });
 
         subscribeBroadcast(PublishConferenceBroadcast.class, c -> {
             int published = c.getPublished(student);
@@ -47,10 +50,12 @@ public class StudentService extends MicroService {
             int paperRead = c.getRead(student);
             student.increasePapersRead(paperRead);
         });
-// todo: maybe prioritize testModel in the queue
-
+        // send models to train -> test -> publish
         for(Model model : student.getModels()){
             Future<Model.Status> trainFuture = trainModel(model);
+            if(trainFuture == null){
+                int x = 2;
+            }
             if(trainFuture != null) { // todo: fix this line
                 Model.Status status = trainFuture.get();
                 if(status.equals(Model.Status.Trained)){

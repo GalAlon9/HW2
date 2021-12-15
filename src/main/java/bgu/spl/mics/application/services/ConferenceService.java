@@ -33,7 +33,10 @@ public class ConferenceService extends MicroService {
     @Override
     protected void initialize() {
         // subscribe to terminate broadcast
-        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, t -> {
+            terminate();
+            System.out.println("conference service  " + conference.getName() + " terminated");
+        });
 
         subscribeBroadcast(TickBroadcast.class , tickBroadcast ->{
             increaseTick(tickBroadcast.get());
@@ -47,7 +50,8 @@ public class ConferenceService extends MicroService {
                 conference.addPublication(results.getModel());
             });
         }
-        if(currTick == conference.getFinish()){//add hte conference results to the output file and terminate
+        //add the conference results to the output file and terminate
+        if(currTick == conference.getFinish()){
             sendBroadcast(new PublishConferenceBroadcast(conference));
             LinkedList models = new LinkedList();
 
@@ -57,6 +61,7 @@ public class ConferenceService extends MicroService {
             ConferenceRes conferenceRes = new ConferenceRes(conference.getName(),conference.getDate(),models);
             OutputJson.getInstance().addConferenceRes(conferenceRes);
             terminate();
+            System.out.println("conference service  " + conference.getName() + " terminated");
         }
     }
 }

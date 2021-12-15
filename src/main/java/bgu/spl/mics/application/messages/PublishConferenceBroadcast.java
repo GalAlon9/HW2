@@ -4,8 +4,6 @@ import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.application.objects.ConferenceInformation;
 import bgu.spl.mics.application.objects.Student;
 
-import java.util.HashMap;
-
 public class PublishConferenceBroadcast implements Broadcast {
     private ConferenceInformation conference;
 
@@ -14,7 +12,7 @@ public class PublishConferenceBroadcast implements Broadcast {
     }
 
     public int getPublished(Student student) {
-        return conference.getPublishedByStudent(student);
+        return conference.getNumOfPublishedByStudent(student);
     }
 
     public int getRead(Student student) {

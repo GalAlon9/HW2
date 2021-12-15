@@ -102,10 +102,12 @@ public class GPU {
 
     // prepare batches from model.data and insert the batches into the disk
     public void prepareBatches() {
-        for (int i = 0; i < currModel.getData().Size(); i += 1000) {
-            DataBatch db = new DataBatch(i, currModel.getData());
-            db.setGpu(this);
-            Disk.add(db);
+        if (currModel != null) {
+            for (int i = 0; i < currModel.getData().Size(); i += 1000) {
+                DataBatch db = new DataBatch(i, currModel.getData());
+                db.setGpu(this);
+                Disk.add(db);
+            }
         }
     }
 
@@ -116,7 +118,6 @@ public class GPU {
      */
     public void train() {
         if (!VRAM.isEmpty() && currModel != null) {
-            System.out.println("training " + currModel.getName());
             isTraining = true;
             VRAM.poll();
             endTrainingDBTick = getTick() + ticksToTrain();
@@ -136,7 +137,7 @@ public class GPU {
 
     private void doneTrainingModel() {
         if (currModel != null) {
-            System.out.println("done " + currModel);
+            System.out.println("done " + currModel.getName());
             currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics

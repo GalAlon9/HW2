@@ -33,7 +33,10 @@ public class GPUService extends MicroService {
     protected void initialize() {
         // TODO Implement this
         // subscribe to terminate broadcast
-        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, t -> {
+            terminate();
+            System.out.println("gpu service terminated");
+        });
 
        subscribeEvent(TrainModelEvent.class, modelEvent -> {
            Model model = modelEvent.getModel();

@@ -23,7 +23,10 @@ public class CPUService extends MicroService {
     protected void initialize() {
         // TODO Implement this
         // subscribe to terminate broadcast
-        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, t -> {
+            terminate();
+            System.out.println("cpu service terminated");
+        });
 
         subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
             tick = tickBroadcast.get();

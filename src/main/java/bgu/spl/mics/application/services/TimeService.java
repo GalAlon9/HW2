@@ -38,7 +38,6 @@ public class TimeService extends MicroService {
     protected void initialize() {
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
-
         // send tick broadcast every tick, and send terminate broadcast when time is over
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -46,13 +45,13 @@ public class TimeService extends MicroService {
             public void run() {
                 currTick++;
                 if (currTick < duration) {
-					sendBroadcast(new TickBroadcast(currTick));
-
+                    sendBroadcast(new TickBroadcast(currTick));
                 }
-				// reached end of the duration - terminate all processes, and collect time results to the output
+                // reached end of the duration - terminate all processes, and collect time results to the output
                 else {
-					sendBroadcast(new TerminateBroadcast());
+                    sendBroadcast(new TerminateBroadcast());
                     timer.cancel();
+                    System.out.println("time service terminated");
 
                     OutputJson.getInstance().setCPUTime(Cluster.getInstance().getCpuTime());
                     OutputJson.getInstance().setGPUTime(Cluster.getInstance().getGpuTime());

@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import bgu.spl.mics.application.messages.TrainModelEvent;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,7 +14,7 @@ import java.util.Queue;
  */
 public class MessageBusImpl implements MessageBus {
     private final HashMap<MicroService, Queue<Message>> MSqueueMap;
-    private final HashMap<Class<? extends Event>, Queue<MicroService>> eventMap; //todo: check if queue is the best implement
+    private final HashMap<Class<? extends Event>, Queue<MicroService>> eventMap;
     private final HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
     private final HashMap<Event, Future> futureMap;
     private final Object MSqueueLocker;
