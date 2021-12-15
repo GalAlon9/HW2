@@ -54,9 +54,6 @@ public class Cluster {
 
     public void receiveDataFromGPUSendToCPU(DataBatch db) {
 //        dataMap.put(db, gpu);
-        if(db == null){
-            int x= 2;
-        }
         assert cpuMinHeap.peek() != null;
         CPU receiver = cpuMinHeap.peek();
         receiver.addData(db);
