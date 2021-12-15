@@ -37,7 +37,7 @@ public class Model {
     }
 
     public Student getStudent() {
-        return getStudent();
+        return student;
     }
 
     public Status getStatus() {

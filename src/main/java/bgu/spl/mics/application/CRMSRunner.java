@@ -135,10 +135,9 @@ public class CRMSRunner {
 
     public static void CPUSInitialize(JsonArray CPUs, List<MicroService> msList) {
         Cluster cluster = Cluster.getInstance();
-        int id = 0;
         for (JsonElement cpu : CPUs) {
             int cores = cpu.getAsInt();
-            CPU cpu1 = new CPU(++id,cores);
+            CPU cpu1 = new CPU(cores);
             CPUService cpuService = new CPUService(cpu1);
             cluster.addCPU(cpu1);
             msList.add(cpuService);

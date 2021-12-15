@@ -3,8 +3,6 @@ package bgu.spl.mics.application.objects;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
 
 public class GPUTest {
     private static GPU gpu;
@@ -24,7 +22,7 @@ public class GPUTest {
         //setup
         DataBatch db;
         gpu.addTrainModel(model);
-        gpu.setModel();
+        gpu.setNextModel();
         //set
         db = gpu.extractBatchesFromDisk();
         //after
@@ -35,7 +33,7 @@ public class GPUTest {
         assertNull("some model has been assigned",gpu.getModel());
         //set
         gpu.addTrainModel(model);
-        gpu.setModel();
+        gpu.setNextModel();
         //after
         assertNotNull("no model has been assigned to the gpu",gpu.getModel());
     }

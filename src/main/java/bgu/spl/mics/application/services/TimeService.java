@@ -1,11 +1,7 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
-
-import java.sql.Time;
-import java.time.Clock;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,7 +22,7 @@ public class TimeService extends MicroService {
 
     public TimeService(int speed, int duration) {
         super("TimeService");
-        currTick = 1;
+        currTick = 0;
         this.speed = speed;
         this.duration = duration;
     }

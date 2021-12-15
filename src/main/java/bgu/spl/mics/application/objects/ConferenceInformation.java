@@ -8,12 +8,12 @@ import java.util.HashMap;
  */
 public class ConferenceInformation {
 
-    private String name;
+    private final String name;
     private int date;
-    private HashMap<Student,Integer> publicationsByStudent;
+    private final HashMap<Student,Integer> publicationsByStudent;
     private int size;
-    private int start;
-    private int finish;
+    private final int start;
+    private final int finish;
 
     public ConferenceInformation(String name, int start, int finish) {
         this.name = name;

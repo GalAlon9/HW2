@@ -2,18 +2,19 @@ package bgu.spl.mics.application.objects;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Test;
 
 public class CPUTest {
     private static CPU cpu;
     DataBatch dataBatch;
     
      @Before
-    public void setUp() throws Exception{
-        cpu = new CPU(1, 32);
+    public void setUp(){
+        cpu = new CPU(32);
         dataBatch = new DataBatch(0, new Data("Text",1000));
 
     }
-
+    @Test
     public void addDataTest(){
         //setup
         int preSize = cpu.getDataSize();
@@ -24,6 +25,7 @@ public class CPUTest {
                 " increase by one",preSize + 1, cpu.getDataSize());
 
     }
+    @Test
     public void testUpdateTick(){
         // setup
         int preTick = cpu.getTick();
@@ -32,6 +34,7 @@ public class CPUTest {
         assertEquals(preTick + 1,cpu.getTick());
     }
 
+    @Test
     public void processTest(){
         //setup
         cpu.addData(dataBatch);
@@ -46,7 +49,7 @@ public class CPUTest {
         assertTrue("Error if not processed", dataBatch.IsProcessed());
         assertEquals(startTick+cpu.ticksToProcess(dataBatch), cpu.getTick());
     }
-
+    @Test
     public void ticksTest(){
         assertEquals("Expected 2", 2 ,cpu.ticksToProcess(dataBatch));
     }

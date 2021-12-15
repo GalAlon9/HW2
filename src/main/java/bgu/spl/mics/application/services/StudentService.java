@@ -18,7 +18,7 @@ import java.util.HashMap;
  */
 public class StudentService extends MicroService {
     private String name;
-    private Student student;
+    private final Student student;
 //    private HashMap<Model, Future> trainMap;
 //    private HashMap<Model, Future> testMap;
 //    private HashMap<Model, Future> publishedMap;
@@ -66,7 +66,7 @@ public class StudentService extends MicroService {
     private Future testModel(Model model){
         return sendEvent(new TestModelEvent(model));
     }
-    private Future publishResult(Model model){
-        return sendEvent(new PublishResultsEvent(model));
+    private void publishResult(Model model){
+        sendEvent(new PublishResultsEvent(model));
     }
 }
