@@ -11,14 +11,14 @@ import java.util.Queue;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-    private HashMap<MicroService, Queue<Message>> MSqueueMap;
-    private HashMap<Class<? extends Event>, Queue<MicroService>> eventMap; //todo: check if queue is the best implement
-    private HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
-    private HashMap<Event, Future> futureMap;
-    private Object MSqueueLocker;
-    private Object eventLocker;
-    private Object broadcastLocker;
-    private Object futureLocker;
+    private final HashMap<MicroService, Queue<Message>> MSqueueMap;
+    private final HashMap<Class<? extends Event>, Queue<MicroService>> eventMap; //todo: check if queue is the best implement
+    private final HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
+    private final HashMap<Event, Future> futureMap;
+    private final Object MSqueueLocker;
+    private final Object eventLocker;
+    private final Object broadcastLocker;
+    private final Object futureLocker;
 
     private MessageBusImpl() {
         MSqueueMap = new HashMap<>();
@@ -32,7 +32,7 @@ public class MessageBusImpl implements MessageBus {
     }
 
     private static class SingletonHolder {
-        private static MessageBusImpl instance = new MessageBusImpl();
+        private static final MessageBusImpl instance = new MessageBusImpl();
     }
 
     public static MessageBusImpl getInstance() {
@@ -247,6 +247,12 @@ public class MessageBusImpl implements MessageBus {
             }
             return MSqueueMap.get(m).poll();
         }
+    }
+    public void clear(){
+        futureMap.clear();
+        broadcastMap.clear();
+        eventMap.clear();
+        MSqueueMap.clear();
     }
 
 

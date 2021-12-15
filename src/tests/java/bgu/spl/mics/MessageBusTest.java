@@ -7,8 +7,6 @@ import bgu.spl.mics.example.services.*;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
-
-import bgu.spl.mics.application.services.ConferenceService;
 import bgu.spl.mics.example.messages.ExampleEvent;
 import bgu.spl.mics.example.services.ExampleBroadcastListenerService;
 
@@ -26,18 +24,18 @@ public class MessageBusTest {
     @Before
      public void setUp() throws Exception{
         mb = MessageBusImpl.getInstance();
-        broadcastListener1 = new ExampleBroadcastListenerService("example",new String[1]);
-        broadcastListener2 = new ExampleBroadcastListenerService("example",new String[1]);
-        eventHandler1 = new ExampleEventHandlerService("example",new String[1]);
-        eventHandler2 = new ExampleEventHandlerService("example",new String[1]);
-        messageSender = new ExampleMessageSenderService("example",new String[1]);
+        broadcastListener1 = new ExampleBroadcastListenerService("example",new String[]{"1"});
+        broadcastListener2 = new ExampleBroadcastListenerService("example",new String[]{"1"});
+        eventHandler1 = new ExampleEventHandlerService("example",new String[]{"1"});
+        eventHandler2 = new ExampleEventHandlerService("example",new String[]{"1"});
+        messageSender = new ExampleMessageSenderService("example",new String[]{"event"});
         broadcast  = new ExampleBroadcast("0");    
         event = new ExampleEvent("Gal");
     }
 
     @After
     public void tearDown() throws Exception {
-        //mb.Clear();
+        mb.clear();
     }
 
 
@@ -111,7 +109,7 @@ public class MessageBusTest {
 
     @Test
     public void testRegister() {
-        assertFalse("Error if is registered", mb.isRegistered(messageSender));
+        assertFalse("Error if registered", mb.isRegistered(messageSender));
         mb.register(messageSender);
         assertTrue("Error if not registered", mb.isRegistered(messageSender));
     }

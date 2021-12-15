@@ -52,11 +52,9 @@ public class Future<T> {
      * @post isDone = true
      */
     public synchronized void resolve(T result) {
-        if (!isDone) {
             isDone = true;
             this.result = result;
             notifyAll();
-        }
     }
 
     /**

@@ -17,9 +17,9 @@ import java.util.*;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class GPUService extends MicroService {
-    private GPU gpu;
+    private final GPU gpu;
     private int tick;
-    private HashMap<Model , Event> modelMap;
+    private final HashMap<Model , Event> modelMap;
     public GPUService(GPU gpu) {
         super("GPU service");
         // TODO Implement this
@@ -44,9 +44,6 @@ public class GPUService extends MicroService {
         subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
             tick = tickBroadcast.get();
             gpu.updateTick(tick);
-            if(!gpu.isTraining()){
-                gpu.work();
-            }
         });
 
        subscribeEvent(TestModelEvent.class, modelEvent -> {

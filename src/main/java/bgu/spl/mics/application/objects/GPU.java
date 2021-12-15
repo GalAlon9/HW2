@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.objects;
 
-import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.services.GPUService;
 
 import java.util.*;
@@ -18,42 +17,33 @@ public class GPU {
      */
     public enum Type {RTX3090, RTX2080, GTX1080}
 
-    private Type type;
-    private Model currModel;
-    private Cluster cluster;
-    private LinkedList<DataBatch> Disk;
-    private LinkedList<DataBatch> VRAM;
+    private final Type type;
+    private Model currModel = null;
+    private final Cluster cluster = Cluster.getInstance();
+    private final LinkedList<DataBatch> Disk = new LinkedList<>();
+    private final LinkedList<DataBatch> VRAM = new LinkedList<>();
     private int VRAM_Capacity;
-    private int currTick;
-    private boolean isTraining;
-    private Queue<Model> testModelQueue;
-    private Queue<Model> trainModelQueue;
-    private GPUService gpuService;
+    private int currTick = 0;
+    private boolean isTraining = false;
+    private final Queue<Model> testModelQueue = new LinkedList<>();
+    private final Queue<Model> trainModelQueue = new LinkedList<>();
+    private GPUService gpuService = null;
+    private int endTrainingDBTick = 0;
 
 
     /**
      * @param typ the type of the GPU can be “RTX3090”, “RTX2080”, ”GTX1080”.
      */
     public GPU(Type typ) {
-        cluster = Cluster.getInstance();
-        currModel = null;
         type = typ;
-        VRAM_Capacity = type == Type.GTX1080 ? 8 : type == Type.RTX2080 ? 16 : 32;
-        Disk = new LinkedList<DataBatch>();
-        VRAM = new LinkedList<DataBatch>();
-        currTick = 0;
-        isTraining = false;
-        gpuService = null;
-        testModelQueue = new LinkedList<>();
-        trainModelQueue = new LinkedList<>();
-
+        VRAM_Capacity = (type == Type.GTX1080) ? 8 : ((type == Type.RTX2080) ? 16 : 32);
     }
 
     public void setGpuService(GPUService gpuService) {
         this.gpuService = gpuService;
     }
 
-    public void sendToCluster() {
+    private void sendToCluster() {
         while (!Disk.isEmpty() && getCapacity() > 0) {
             DataBatch unProcessedData = extractBatchesFromDisk();
             cluster.receiveDataFromGPUSendToCPU(unProcessedData);
@@ -74,7 +64,7 @@ public class GPU {
      * @post: this.model = model
      */
     // the gpu service assign the model to the gpu
-    public void setModel() {
+    public void setNextModel() {
         this.currModel = null;
         if (!trainModelQueue.isEmpty()) {
             this.currModel = trainModelQueue.poll();
@@ -111,7 +101,7 @@ public class GPU {
     }
 
     // prepare batches from model.data and insert the batches into the disk
-    private void prepareBatches() {
+    public void prepareBatches() {
         for (int i = 0; i < currModel.getData().Size(); i += 1000) {
             DataBatch db = new DataBatch(i, currModel.getData());
             db.setGpu(this);
@@ -124,57 +114,59 @@ public class GPU {
      * @inv: !vram.isEmpty() && getModel() != null
      * @post: @pre(data.proccesed) = @post(data.proccesed - 1)
      */
-    public synchronized void train() {
-        if (!VRAM.isEmpty()) {
-            DataBatch processedDataBatch = VRAM.poll();
+    public void train() {
+        if (!VRAM.isEmpty() && currModel != null) {
+            System.out.println("training " + currModel.getName());
             isTraining = true;
-            DataBatch data = this.VRAM.poll();
-            int startTick = getTick();
-            try {
-                while (getTick() < startTick + TicksToProcess()) {
-                    wait();
-                    cluster.increaseGpuTime();
-                }
-            } catch (InterruptedException e) {
-            }
-            isTraining = false;
+            VRAM.poll();
+            endTrainingDBTick = getTick() + ticksToTrain();
             currModel.getData().increaseProcessed();
         }
-        VRAM_Capacity++;
-        if (isDoneTraining()) {
-            doneTrain();
-        }
-        sendToCluster();
     }
 
     /**
      * @return if training is done -> data.proccesed == data.size
      */
-    public boolean isDoneTraining() {
+    private boolean isDoneTrainingModel() {
         if (currModel != null) {
-            return currModel.getData().getProcessed() == currModel.getData().Size();
+            return currModel.getData().getProcessed() >= currModel.getData().Size();
         }
         return true;
     }
 
-    private void doneTrain() {
-        if(currModel != null){
+    private void doneTrainingModel() {
+        if (currModel != null) {
+            System.out.println("done " + currModel);
             currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics
         }
     }
 
-    public synchronized void updateTick(int tick) {
+    public void updateTick(int tick) {
         currTick = tick;
-        notifyAll();
+        if (isTraining()) {
+            cluster.increaseGpuTime();
+            if (getTick() == endTrainingDBTick) {
+                VRAM_Capacity++;
+                sendToCluster();
+            }
+        }
+        if (isDoneTrainingModel()) {  // finished training model
+            doneTrainingModel();
+            testModels(); // test next models if available
+            setNextModel(); // train the the next model
+            prepareBatches();
+            sendToCluster();
+        }
+        train();
     }
 
     public boolean isTraining() {
         return isTraining;
     }
 
-    private int TicksToProcess() {
+    private int ticksToTrain() {
         if (type == Type.RTX3090) return 1;
         if (type == Type.RTX2080) return 2;
         else return 4;
@@ -184,19 +176,6 @@ public class GPU {
         return currTick;
     }
 
-    // test models first than train the next model
-    public void work() {
-        if (isDoneTraining()) {//only when initializing or finish to train model
-            testModels();
-            setModel();
-            if (currModel != null) {
-                prepareBatches();
-                sendToCluster();
-            }
-        }
-        train();
-
-    }
 
     // test the next models in the queue
     private void testModels() {

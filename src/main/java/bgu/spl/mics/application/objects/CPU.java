@@ -9,61 +9,47 @@ import java.util.*;
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
 public class CPU {
-    private int id;
-    private int cores;
-    private Queue<DataBatch> dataQueue;
-    private Cluster cluster;
-    private int currTick;
-    private int timeToWait;
-    private boolean isProcessing;
-    public Object cpuLock;
+    private final int cores;
+    private final Queue<DataBatch> dataQueue = new LinkedList<>();
+    private final Cluster cluster = Cluster.getInstance();
+    private int currTick = 0;
+    private int timeToWait = 0;
+    private boolean isProcessing = false;
+    private int endProcessingTick = 0;
+    private DataBatch currentDB = null;
 
-    public CPU(int id, int cores) {
-        this.id = id;
+    public CPU(int cores) {
         this.cores = cores;
-        this.dataQueue = new LinkedList<>();
-        this.cluster = Cluster.getInstance();
-        this.currTick = 0;
-        this.timeToWait = 0;
-        this.isProcessing = false;
-        this.cpuLock = new Object();
+
     }
 
     /**
-     * @param dBatch - dataBatch to process
+     * @param db - dataBatch to process
      * @inv the cpu can receive data to process
      */
-    public void addData(DataBatch dBatch) {
-        dataQueue.add(dBatch);
-        timeToWait += ticksToProcess(dBatch);
+    public void addData(DataBatch db) {
+        dataQueue.add(db);
+        timeToWait += ticksToProcess(db);
     }
 
     /**
      * @return the processed dataBatch
-     * @Pre the DataBatch isn't processed
-     * @Post the DataBatch is processed
+     * @pre the DataBatch isn't processed
+     * @post the DataBatch is processed
      */
     public void process() {
         if (!dataQueue.isEmpty()) {
             isProcessing = true;
-            DataBatch data = this.dataQueue.poll();
-            int startTick = getTick();
-            while (getTick() < startTick + ticksToProcess(data)) {
-                try {
-                    synchronized (cpuLock) {
-                        cpuLock.wait();
-                    }
-                    timeToWait--;
-                    cluster.increaseCpuTime();
-                } catch (InterruptedException e) {
-                }
-            }
-            System.out.println("out");
-            data.process();
-            cluster.increaseProcessedData();
-            isProcessing = false;
-            cluster.receiveDataFromCPUSendToGPU(data);
+            currentDB = this.dataQueue.poll();
+            endProcessingTick = getTick() + ticksToProcess(currentDB);
         }
+    }
+
+    private void doneProcess() {
+        currentDB.process();
+        cluster.increaseProcessedData();
+        isProcessing = false;
+        cluster.receiveDataFromCPUSendToGPU(currentDB);
     }
 
     public boolean isProcessing() {
@@ -75,9 +61,16 @@ public class CPU {
      * @post: currTick = tick
      */
     public void updateTick(int tick) {
-        synchronized (cpuLock) {
-            currTick = tick;
-            cpuLock.notifyAll();
+        currTick = tick;
+        if(isProcessing()){
+            timeToWait--;
+            cluster.increaseCpuTime();
+            if(getTick() == endProcessingTick){
+                doneProcess();
+            }
+        }
+        if (!isProcessing()) {
+            process();
         }
     }
 
@@ -86,15 +79,15 @@ public class CPU {
     }
 
     /**
-     * @param dataBatch - based on dataBatch type and number of cores calculates
+     * @param db - based on dataBatch type and number of cores calculates
      *                  how many ticks required to process the data
      * @return how many ticks required to process the data
      */
-    public int ticksToProcess(DataBatch dataBatch) {
-        if (dataBatch.getData().getType() == Data.Type.Images) {
+    public int ticksToProcess(DataBatch db) {
+        if (db.getData().getType() == Data.Type.Images) {
             return (32 / cores) * 4;
         }
-        if (dataBatch.getData().getType() == Data.Type.Text) {
+        if (db.getData().getType() == Data.Type.Text) {
             return (32 / cores) * 2;
         } else {
             return 32 / cores;
