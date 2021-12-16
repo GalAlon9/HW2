@@ -2,13 +2,13 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.CRMSRunner;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 import bgu.spl.mics.application.objects.OutputResults.ModelRes;
 import bgu.spl.mics.application.objects.OutputResults.OutputJson;
 import bgu.spl.mics.application.objects.OutputResults.StudentRes;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -50,12 +50,22 @@ public class StudentService extends MicroService {
             int paperRead = c.getRead(student);
             student.increasePapersRead(paperRead);
         });
+
+        // wait for all microServices to subscribe
+        CRMSRunner.countDown.countDown();
+        try {
+            CRMSRunner.countDown.await();
+        } catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
+        act();
+
+    }
+    private void act(){
         // send models to train -> test -> publish
         for(Model model : student.getModels()){
             Future<Model.Status> trainFuture = trainModel(model);
-            if(trainFuture == null){
-                int x = 2;
-            }
             if(trainFuture != null) { // todo: fix this line
                 Model.Status status = trainFuture.get();
                 if(status.equals(Model.Status.Trained)){

@@ -69,6 +69,7 @@ public class GPU {
         if (!trainModelQueue.isEmpty()) {
             this.currModel = trainModelQueue.poll();
             currModel.setStatus(Model.Status.Training);
+            System.out.println("start training model "+ currModel.getName());
         }
     }
 
@@ -137,7 +138,6 @@ public class GPU {
 
     private void doneTrainingModel() {
         if (currModel != null) {
-            System.out.println("done " + currModel.getName());
             currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics

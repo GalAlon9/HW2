@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.CRMSRunner;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.CPU;
 
@@ -32,6 +33,9 @@ public class CPUService extends MicroService {
             tick = tickBroadcast.get();
             cpu.updateTick(tick);
         });
+
+        // wait for all microServices to subscribe
+        CRMSRunner.countDown.countDown();
 
     }
 }

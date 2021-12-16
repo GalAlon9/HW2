@@ -35,7 +35,6 @@ public abstract class MicroService implements Runnable {
         this.name = name;
         mb = MessageBusImpl.getInstance();
         messageMap = new HashMap<>();
-        mb.register(this);
     }
 
     /**
@@ -163,6 +162,7 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        mb.register(this);
         initialize();
         while (!terminated) {
             Message m = null;

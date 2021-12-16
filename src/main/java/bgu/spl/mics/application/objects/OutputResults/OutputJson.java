@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.objects.OutputResults;
 
 import bgu.spl.mics.application.objects.Cluster;
+import bgu.spl.mics.application.objects.Data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -54,6 +55,8 @@ public class OutputJson {
 
 
 }
+
+
 
 
 

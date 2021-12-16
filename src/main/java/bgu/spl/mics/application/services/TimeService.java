@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.CRMSRunner;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.Cluster;
 import bgu.spl.mics.application.objects.OutputResults.OutputJson;
@@ -36,9 +37,24 @@ public class TimeService extends MicroService {
 
     @Override
     protected void initialize() {
+
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
         // send tick broadcast every tick, and send terminate broadcast when time is over
+
+
+        // wait for all microServices to subscribe
+        CRMSRunner.countDown.countDown();
+        try {
+            CRMSRunner.countDown.await();
+        } catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
+        act();
+    }
+
+    private void act() {
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

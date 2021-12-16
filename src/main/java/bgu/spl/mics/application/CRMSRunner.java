@@ -8,11 +8,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -22,9 +25,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class CRMSRunner {
     private static List<Thread> threadList = new LinkedList<>();
+    public static CountDownLatch countDown;
+
 
     public static void main(String[] args) {
         initializeAll("example_input.json");
+        countDown = new CountDownLatch(threadList.size());
         try {
             // Starts all the threads and initializes all the services
             for (Thread thread : threadList) {

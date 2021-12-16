@@ -1,7 +1,6 @@
 package bgu.spl.mics.application.objects.OutputResults;
 
 import bgu.spl.mics.application.objects.Data;
-import bgu.spl.mics.application.objects.Model;
 import com.google.gson.JsonObject;
 
 public class ModelRes {

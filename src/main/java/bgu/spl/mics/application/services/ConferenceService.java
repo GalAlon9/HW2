@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.CRMSRunner;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.ConferenceInformation;
 import bgu.spl.mics.application.objects.Model;
@@ -42,6 +43,9 @@ public class ConferenceService extends MicroService {
             increaseTick(tickBroadcast.get());
         });
 
+        // wait for all microServices to subscribe
+        CRMSRunner.countDown.countDown();
+
     }
     private void increaseTick(int tick){
         currTick = tick;
@@ -50,8 +54,11 @@ public class ConferenceService extends MicroService {
                 conference.addPublication(results.getModel());
             });
         }
+
+
         //add the conference results to the output file and terminate
         if(currTick == conference.getFinish()){
+
             sendBroadcast(new PublishConferenceBroadcast(conference));
             LinkedList models = new LinkedList();
 
