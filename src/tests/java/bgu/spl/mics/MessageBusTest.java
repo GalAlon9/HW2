@@ -59,6 +59,10 @@ public class MessageBusTest {
 
     @Test
     public void testComplete() {
+        // setup
+        mb.register(eventHandler1);
+        mb.subscribeEvent(event.getClass(),eventHandler1);
+        mb.sendEvent(event);
         // pre
         assertFalse("Error if completed", mb.isComplete(event));
         mb.complete(event, "someResult");
@@ -67,10 +71,14 @@ public class MessageBusTest {
 
     @Test
     public void testSendBroadcast() {
+        //setup
         Message  m1 , m2;
-        mb.subscribeBroadcast(ExampleBroadcast.class, broadcastListener1);
-        mb.subscribeBroadcast(ExampleBroadcast.class, broadcastListener2);
+        mb.register(broadcastListener1);
+        mb.register(broadcastListener2);
+        mb.subscribeBroadcast(broadcast.getClass(), broadcastListener1);
+        mb.subscribeBroadcast(broadcast.getClass(), broadcastListener2);
         mb.sendBroadcast(broadcast);
+        //test
         try{
             m1= mb.awaitMessage(broadcastListener1);
             assertEquals("the micro service didn't receive the broadcast",broadcast, m1);
@@ -97,6 +105,7 @@ public class MessageBusTest {
     public void testSendEvent() {
         //setup
         Future<String> future;
+        mb.register(eventHandler1);
         // pre
         assertNull(mb.sendEvent(event));
         // set
@@ -116,6 +125,9 @@ public class MessageBusTest {
 
     @Test
     public void testUnregister() {
+        // set
+        mb.register(messageSender);
+        // test
         assertTrue("Error if not registered", mb.isRegistered(messageSender));
         mb.unregister(messageSender);
         assertFalse("Error if is registered", mb.isRegistered(messageSender));

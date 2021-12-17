@@ -1,13 +1,11 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Event;
-import bgu.spl.mics.Message;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.CRMSRunner;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,16 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GPUService extends MicroService {
     private final GPU gpu;
-    private int tick;
-    private final ConcurrentHashMap<Model, Event> modelMap;
+    private int tick = 0;
+    private final ConcurrentHashMap<Model, Event> trainMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Model, Event> testMap = new ConcurrentHashMap<>();
+
 
     public GPUService(GPU gpu) {
         super("GPU service");
         // TODO Implement this
         this.gpu = gpu;
         gpu.setGpuService(this);
-        tick = 0;
-        modelMap = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -48,7 +46,7 @@ public class GPUService extends MicroService {
         subscribeEvent(TrainModelEvent.class, modelEvent -> {
             Model model = modelEvent.getModel();
             gpu.addTrainModel(model);
-            modelMap.put(model, modelEvent);
+            trainMap.put(model, modelEvent);
 
         });
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
@@ -59,7 +57,7 @@ public class GPUService extends MicroService {
         subscribeEvent(TestModelEvent.class, modelEvent -> {
             Model model = modelEvent.getModel();
             gpu.addTestModel(model);
-            modelMap.put(model, modelEvent);
+            testMap.put(model, modelEvent);
         });
 
         // wait for all microServices to subscribe
@@ -68,16 +66,21 @@ public class GPUService extends MicroService {
     }
 
     public void completeEvent(Model model) {
-        Event event = modelMap.get(model);
-        if (event.getClass() == TrainModelEvent.class) {
-            complete(event, model.getStatus());
-            System.out.println("done training " + model.getName() + " with status: " + model.getStatus().toString());
-        } else { // testModel event
-            complete(event, model.getResult());
-            System.out.println("done testing " + model.getName() + " with result: " +model.getResult().toString());
-
+        if (trainMap.containsKey(model)) {
+            Event trainEvent = trainMap.get(model);
+            if (trainEvent.getClass() == TrainModelEvent.class) {
+                complete(trainEvent, model.getStatus());
+                System.out.println("done training " + model.getName() + " with status: " + model.getStatus().toString());
+                trainMap.remove(model);
+            }
+        } else if (testMap.containsKey(model)) {
+            { // testModel event
+                Event testEvent = testMap.get(model);
+                complete(testEvent, model.getResult());
+                System.out.println("done testing " + model.getName() + " with result: " + model.getResult().toString());
+                testMap.remove(model);
+            }
         }
-        modelMap.remove(model);
 
 
     }

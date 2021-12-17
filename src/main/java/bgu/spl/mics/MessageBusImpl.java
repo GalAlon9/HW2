@@ -126,7 +126,6 @@ public class MessageBusImpl implements MessageBus {
             if (futureMap.containsKey(e)) {
                 futureMap.get(e).resolve(result);
             }
-            futureMap.remove(e);
         }
 
     }
