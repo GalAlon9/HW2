@@ -220,12 +220,6 @@ public class MessageBusImpl implements MessageBus {
      */
     @Override
     public void unregister(MicroService m) {
-        synchronized (MSqueueLocker) {
-            if (!isRegistered(m)) {
-                return;
-            }
-            MSqueueMap.remove(m);
-        }
         synchronized (eventLocker) {
             for (Queue<MicroService> c : eventMap.values()) {
                 c.remove(m);
@@ -235,6 +229,12 @@ public class MessageBusImpl implements MessageBus {
             for (HashSet<MicroService> hashSet : broadcastMap.values()) {
                 hashSet.remove(m);
             }
+        }
+        synchronized (MSqueueLocker) {
+//            if (!isRegistered(m)) {
+//                return;
+//            }
+            MSqueueMap.remove(m);
         }
     }
 
