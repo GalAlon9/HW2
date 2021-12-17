@@ -29,6 +29,7 @@ public class CRMSRunner {
 
 
     public static void main(String[] args) {
+        // todo: change to args[0]
         initializeAll("example_input.json");
         countDown = new CountDownLatch(threadList.size());
         try {
@@ -57,7 +58,7 @@ public class CRMSRunner {
 
                 getProcessedData());
         ConcurrentLinkedQueue<String> modelsTrained = Cluster.getInstance().getModelsTrained();
-        System.out.println("---------Models trained :");
+        System.out.println( modelsTrained.size()+"---------Models trained :");
         for (
                 String model : modelsTrained) {
             System.out.println(model);

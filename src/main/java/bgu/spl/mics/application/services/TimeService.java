@@ -79,7 +79,7 @@ public class TimeService extends MicroService {
                     OutputJson.getInstance().setBatches(Cluster.getInstance().getProcessedData());
                 }
             }
-        }, speed, speed);
+        }, 0, speed);
 
 
     }

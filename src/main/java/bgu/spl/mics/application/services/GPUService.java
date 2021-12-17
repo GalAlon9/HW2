@@ -35,10 +35,6 @@ public class GPUService extends MicroService {
         // TODO Implement this
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> {
-            // release all un-complete models
-//            for (Model model : modelMap.keySet()) {
-//                completeEvent(model);
-//            }
             terminate();
             System.out.println("gpu service terminated");
         });

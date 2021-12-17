@@ -36,9 +36,11 @@ public class GPU {
      */
     public GPU(Type typ) {
         type = typ;
-        VRAM_Capacity = (type == Type.GTX1080) ? 8 : ((type == Type.RTX2080) ? 16 : 32);
+        resetVRAMCapacity();
     }
-
+    private void resetVRAMCapacity(){
+        this.VRAM_Capacity = (type == Type.GTX1080) ? 8 : ((type == Type.RTX2080) ? 16 : 32);
+    }
     public void setGpuService(GPUService gpuService) {
         this.gpuService = gpuService;
     }
@@ -146,10 +148,15 @@ public class GPU {
 //            currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics
+            isTraining = false;
+            resetVRAMCapacity();
         }
     }
 
     public void updateTick(int tick) {
+        if(tick == 25000 ||tick == 33000 ||tick == 40000){
+            int x =2;
+        }
         currTick = tick;
         if (isTraining()) {
             cluster.increaseGpuTime();

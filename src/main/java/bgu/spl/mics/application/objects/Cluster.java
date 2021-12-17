@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Cluster {
     private final List<GPU> gpus;
-    private final PriorityQueue<CPU> cpuMinHeap;
+    private final PriorityBlockingQueue cpuMinHeap;
+    private final List<CPU> cpuList;
     private final AtomicInteger cpuTime;
     private final ConcurrentLinkedQueue<String> modelsTrained;
     private final AtomicInteger processedData;
@@ -32,12 +33,16 @@ public class Cluster {
      */
     private Cluster() {
         gpus = new LinkedList<>();
-        cpuMinHeap = new PriorityQueue<>(Comparator.comparingInt(CPU::getTimeToWait));
+        cpuMinHeap = new PriorityBlockingQueue();
+        cpuList = new LinkedList<>();
         cpuTime = new AtomicInteger();
         gpuTime = new AtomicInteger();
         processedData = new AtomicInteger();
         modelsTrained = new ConcurrentLinkedQueue<>();
 
+    }
+    public int cpuComparator(CPU a, CPU b){
+        return b.getTimeToWait() - a.getTimeToWait();
     }
 
     public static Cluster getInstance() {
@@ -49,7 +54,8 @@ public class Cluster {
     }
 
     public void addCPU(CPU cpu) {
-        this.cpuMinHeap.add(cpu);
+//        this.cpuMinHeap.offer(cpu);
+        cpuList.add(cpu);
     }
 
     public void addGPU(GPU gpu) {
@@ -58,12 +64,18 @@ public class Cluster {
 
     public void receiveDataFromGPUSendToCPU(DataBatch db) {
         synchronized (lock1) {
-            assert cpuMinHeap.peek() != null;
-            CPU receiver = cpuMinHeap.peek();
-            if (db == null) {
+//            assert cpuMinHeap.peek() != null;
+//            CPU receiver = cpuMinHeap.peek();
+            CPU minCPU = cpuList.get(0);
+            for(CPU cpu : cpuList){
+                if(cpu.getTimeToWait() < minCPU.getTimeToWait()){
+                    minCPU = cpu;
+                }
+            }
+            minCPU.addData(db);
+            if(minCPU.getTick()% 5000  < 10){
                 int x = 2;
             }
-            receiver.addData(db);
         }
     }
 
