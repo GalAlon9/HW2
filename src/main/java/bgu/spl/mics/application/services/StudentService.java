@@ -89,7 +89,7 @@ public class StudentService extends MicroService {
         if (currModelIndex < student.getModels().size()) {
             currModel = student.getModels().get(currModelIndex);
             currModelIndex++;
-            System.out.println("student : "+student.getName() +"next model = " + currModel.getName() + " curr model index = " + (currModelIndex-1));
+            System.out.println("student : "+student.getName() +" next model = " + currModel.getName() + " curr model index = " + (currModelIndex-1));
         } else currModel = null;
 
     }

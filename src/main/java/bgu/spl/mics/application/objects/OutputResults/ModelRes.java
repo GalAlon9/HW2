@@ -22,9 +22,13 @@ public class ModelRes {
         JsonObject dataObj = new JsonObject();
         dataObj.addProperty("type", String.valueOf(data.getType()));
         dataObj.addProperty("size", data.Size());
-        modelObj.addProperty("data", String.valueOf(dataObj));
+        modelObj.add("data", dataObj);
         modelObj.addProperty("status",status);
         modelObj.addProperty("result",result);
         return modelObj;
     }
+//    public String toString(){
+//        String output="";
+//
+//    }
 }

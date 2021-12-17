@@ -31,7 +31,7 @@ public class StudentRes {
         studentsObj.addProperty("papersRead",papersRead);
         JsonArray jsonArray = new JsonArray();
         for(ModelRes modelRes : trainedModels){
-            jsonArray.add(String.valueOf(modelRes));
+            jsonArray.add(modelRes.modelResToJson());
         }
         studentsObj.add("trainedModels",jsonArray);
         return studentsObj;
