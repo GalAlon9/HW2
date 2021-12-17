@@ -23,6 +23,9 @@ import java.util.LinkedList;
 public class StudentService extends MicroService {
     private String name;
     private final Student student;
+    private int tick = 0;
+    private Model currModel;
+    private int currModelIndex;
 //    private HashMap<Model, Future> trainMap;
 //    private HashMap<Model, Future> testMap;
 //    private HashMap<Model, Future> publishedMap;
@@ -30,6 +33,8 @@ public class StudentService extends MicroService {
     public StudentService(Student student) {
         super("student service");
         this.student = student;
+        this.currModel = student.getModels().get(0);
+        this.currModelIndex = 0;
 //        this.trainMap = new HashMap<>();
 //        this.testMap = new HashMap<>();
 //        this.publishedMap = new HashMap<>();
@@ -40,6 +45,7 @@ public class StudentService extends MicroService {
         // TODO Implement this
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> {
+            collectData();
             terminate();
             System.out.println("student " + student.getName() + " terminated");
         });
@@ -51,6 +57,10 @@ public class StudentService extends MicroService {
             student.increasePapersRead(paperRead);
         });
 
+        subscribeBroadcast(TickBroadcast.class, c -> {
+            act();
+        });
+
         // wait for all microServices to subscribe
         CRMSRunner.countDown.countDown();
         try {
@@ -59,44 +69,86 @@ public class StudentService extends MicroService {
             exception.printStackTrace();
         }
 
-        act();
 
     }
-    private void act(){
-        // send models to train -> test -> publish
-        for(Model model : student.getModels()){
-            Future<Model.Status> trainFuture = trainModel(model);
-            if(trainFuture != null) { // todo: fix this line
-                Model.Status status = trainFuture.get();
-                if(status.equals(Model.Status.Trained)){
-                    Future<Model.Result> testFuture = testModel(model);
-                    if(testFuture.get().equals(Model.Result.Good)){
-                        publishResult(model);
-                    }
-                }
-            }
+
+    private void act() {
+        //  send models to train -> test -> publish
+        if (currModel == null) {
+            return;
         }
-        //after the run collect results by student
+        if (currModel.getStatus().equals(Model.Status.PreTrained)) trainModel();
+        else if (currModel.getStatus().equals(Model.Status.Training)) ;
+        else if (currModel.getStatus().equals(Model.Status.Trained)) testModel();
+        else if ((currModel.getStatus().equals(Model.Status.Tested))) {
+            if (currModel.getResult().equals(Model.Result.Good)) publishResult();
+            setNextModel();
+        }
+    }
+
+    //         send models to train -> test -> publish
+//        for (Model model : student.getModels()) {
+//            Future<Model.Status> trainFuture = trainModel(model);
+////            if(trainFuture != null) { // todo: fix this line
+//            Model.Status status = trainFuture.get();
+//            if (status.equals(Model.Status.Trained)) {
+//                Future<Model.Result> testFuture = testModel(model);
+//                if (testFuture.get().equals(Model.Result.Good)) {
+//                    publishResult(model);
+//                }
+//            }
+//            }
+//        }
+    //after the run collect results by student
+//        LinkedList<ModelRes> modelResLinkedList = new LinkedList<>();
+//        for (Model model : student.getModels()) {
+//            if (model.getStatus() == Model.Status.Tested || model.getStatus() == Model.Status.Trained) {
+//                ModelRes modelRes = new ModelRes(model.getName(), model.getData(), model.statusToString(), model.resultToString());
+//                modelResLinkedList.add(modelRes);
+//            }
+//        }
+//        StudentRes studentRes = new StudentRes(this.student.getName(), this.student.getDepartment(), this.student.statusToString(),
+//                this.student.getPublications(), this.student.getPapersRead(), modelResLinkedList);
+//        OutputJson.getInstance().addStudentRes(studentRes);
+//    }
+    private void setNextModel() {
+        if (currModelIndex < student.getModels().size() - 1) {
+            currModelIndex++;
+            currModel = student.getModels().get(currModelIndex);
+        } else currModel = null;
+
+    }
+//    private boolean isDoneTraining(){
+//        return currModel.getStatus().equals(Model.Status.Trained);
+//    }
+//    private boolean isDoneTesting(){
+//        return currModel.getResult();
+//    }
+
+    private Future trainModel() {
+        return sendEvent(new TrainModelEvent(currModel));
+    }
+
+    private Future testModel() {
+        return sendEvent(new TestModelEvent(currModel));
+    }
+
+    private void publishResult() {
+        sendEvent(new PublishResultsEvent(currModel));
+    }
+
+    private void collectData() {
+        // after the run collect results by student
         LinkedList<ModelRes> modelResLinkedList = new LinkedList<>();
-        for(Model model:student.getModels()){
-            if(model.getStatus()== Model.Status.Tested||model.getStatus()== Model.Status.Trained){
+        for (Model model : student.getModels()) {
+            if (model.getStatus() == Model.Status.Tested || model.getStatus() == Model.Status.Trained) {
                 ModelRes modelRes = new ModelRes(model.getName(), model.getData(), model.statusToString(), model.resultToString());
                 modelResLinkedList.add(modelRes);
             }
         }
-        StudentRes studentRes = new StudentRes(this.student.getName(),this.student.getDepartment(),this.student.statusToString(),
-                this.student.getPublications(),this.student.getPapersRead(),modelResLinkedList);
+        StudentRes studentRes = new StudentRes(this.student.getName(), this.student.getDepartment(), this.student.statusToString(),
+                this.student.getPublications(), this.student.getPapersRead(), modelResLinkedList);
         OutputJson.getInstance().addStudentRes(studentRes);
-
-
-    }
-    private Future trainModel(Model model){
-        return sendEvent(new TrainModelEvent(model));
-    }
-    private Future testModel(Model model){
-        return sendEvent(new TestModelEvent(model));
-    }
-    private void publishResult(Model model){
-        sendEvent(new PublishResultsEvent(model));
     }
 }
+

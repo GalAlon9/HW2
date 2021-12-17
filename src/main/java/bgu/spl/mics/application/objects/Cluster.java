@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Add all the fields described in the assignment as private fields.
  * Add fields and methods to this class as you see fit (including public methods and constructors).
  */
+
 public class Cluster {
     private final List<GPU> gpus;
     private final PriorityQueue<CPU> cpuMinHeap;
@@ -22,6 +23,9 @@ public class Cluster {
     private final ConcurrentLinkedQueue<String> modelsTrained;
     private final AtomicInteger processedData;
     private final AtomicInteger gpuTime;
+    private Object lock1 = new Object();
+    private Object lock2 = new Object();
+
 
     /**
      * Retrieves the single instance of this class.
@@ -53,16 +57,21 @@ public class Cluster {
     }
 
     public void receiveDataFromGPUSendToCPU(DataBatch db) {
-//        dataMap.put(db, gpu);
-        assert cpuMinHeap.peek() != null;
-        CPU receiver = cpuMinHeap.peek();
-        receiver.addData(db);
+        synchronized (lock1) {
+            assert cpuMinHeap.peek() != null;
+            CPU receiver = cpuMinHeap.peek();
+            if (db == null) {
+                int x = 2;
+            }
+            receiver.addData(db);
+        }
     }
 
     public void receiveDataFromCPUSendToGPU(DataBatch db) {
         if(db.IsProcessed()) {
-            db.getGpu().receiveProcessedData(db);
-//            dataMap.remove(db);
+            synchronized (lock2) {
+                db.getGpu().receiveProcessedData(db);
+            }
         }
     }
 

@@ -46,6 +46,9 @@ public class GPU {
     private void sendToCluster() {
         while (!Disk.isEmpty() && getCapacity() > 0) {
             DataBatch unProcessedData = extractBatchesFromDisk();
+            if(unProcessedData == null){
+                int x =2;
+            }
             cluster.receiveDataFromGPUSendToCPU(unProcessedData);
             VRAM_Capacity--;
         }
@@ -106,6 +109,9 @@ public class GPU {
         if (currModel != null) {
             for (int i = 0; i < currModel.getData().Size(); i += 1000) {
                 DataBatch db = new DataBatch(i, currModel.getData());
+                if(db == null){
+                    int x = 2;
+                }
                 db.setGpu(this);
                 Disk.add(db);
             }
@@ -183,6 +189,7 @@ public class GPU {
         while (!testModelQueue.isEmpty()) {
             Model model = testModelQueue.poll();
             Model.Result result = getResult(model);
+            model.setStatus(Model.Status.Tested);
             model.setResult(result);
             gpuService.completeEvent(model); // resolve the future of the testModelEvent
         }

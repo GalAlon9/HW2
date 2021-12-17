@@ -39,7 +39,9 @@ public class TimeService extends MicroService {
     protected void initialize() {
 
         // subscribe to terminate broadcast
-        subscribeBroadcast(TerminateBroadcast.class, t -> terminate());
+        subscribeBroadcast(TerminateBroadcast.class, t -> {
+            terminate();
+        });
         // send tick broadcast every tick, and send terminate broadcast when time is over
 
 
@@ -61,6 +63,9 @@ public class TimeService extends MicroService {
             public void run() {
                 currTick++;
                 if (currTick < duration) {
+                    if(currTick % 500 == 0){
+                        System.out.println("tick = " + currTick);
+                    }
                     sendBroadcast(new TickBroadcast(currTick));
                 }
                 // reached end of the duration - terminate all processes, and collect time results to the output

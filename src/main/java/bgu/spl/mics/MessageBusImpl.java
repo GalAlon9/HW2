@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
@@ -13,20 +14,20 @@ import java.util.Queue;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-    private final HashMap<MicroService, Queue<Message>> MSqueueMap;
-    private final HashMap<Class<? extends Event>, Queue<MicroService>> eventMap;
-    private final HashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
-    private final HashMap<Event, Future> futureMap;
+    private final ConcurrentHashMap<MicroService, Queue<Message>> MSqueueMap;
+    private final ConcurrentHashMap<Class<? extends Event>, Queue<MicroService>> eventMap;
+    private final ConcurrentHashMap<Class<? extends Broadcast>, HashSet<MicroService>> broadcastMap;
+    private final ConcurrentHashMap<Event, Future> futureMap;
     private final Object MSqueueLocker;
     private final Object eventLocker;
     private final Object broadcastLocker;
     private final Object futureLocker;
 
     private MessageBusImpl() {
-        MSqueueMap = new HashMap<>();
-        eventMap = new HashMap<>();
-        broadcastMap = new HashMap<>();
-        futureMap = new HashMap<>();
+        MSqueueMap = new ConcurrentHashMap<>();
+        eventMap = new ConcurrentHashMap<>();
+        broadcastMap = new ConcurrentHashMap<>();
+        futureMap = new ConcurrentHashMap<>();
         MSqueueLocker = new Object();
         eventLocker = new Object();
         broadcastLocker = new Object();
@@ -125,6 +126,7 @@ public class MessageBusImpl implements MessageBus {
             if (futureMap.containsKey(e)) {
                 futureMap.get(e).resolve(result);
             }
+            futureMap.remove(e);
         }
 
     }
@@ -250,11 +252,20 @@ public class MessageBusImpl implements MessageBus {
             return MSqueueMap.get(m).poll();
         }
     }
+
     public void clear(){
-        futureMap.clear();
-        broadcastMap.clear();
-        eventMap.clear();
-        MSqueueMap.clear();
+        synchronized (futureLocker) {
+            futureMap.clear();
+        }
+        synchronized (broadcastLocker) {
+            broadcastMap.clear();
+        }
+        synchronized (eventLocker) {
+            eventMap.clear();
+        }
+        synchronized (MSqueueLocker) {
+            MSqueueMap.clear();
+        }
     }
 
 

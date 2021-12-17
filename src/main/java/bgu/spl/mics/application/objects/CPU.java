@@ -40,6 +40,7 @@ public class CPU {
     public void process() {
         if (!dataQueue.isEmpty()) {
             isProcessing = true;
+            cluster.increaseCpuTime();
             currentDB = this.dataQueue.poll();
             endProcessingTick = getTick() + ticksToProcess(currentDB);
         }

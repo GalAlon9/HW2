@@ -8,6 +8,7 @@ import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * GPU service is responsible for handling the
@@ -20,14 +21,15 @@ import java.util.*;
 public class GPUService extends MicroService {
     private final GPU gpu;
     private int tick;
-    private final HashMap<Model , Event> modelMap;
+    private final ConcurrentHashMap<Model, Event> modelMap;
+
     public GPUService(GPU gpu) {
         super("GPU service");
         // TODO Implement this
         this.gpu = gpu;
         gpu.setGpuService(this);
         tick = 0;
-        modelMap = new HashMap<>();
+        modelMap = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -36,43 +38,43 @@ public class GPUService extends MicroService {
         // subscribe to terminate broadcast
         subscribeBroadcast(TerminateBroadcast.class, t -> {
             // release all un-complete models
-            for(Model model : modelMap.keySet()){
-                completeEvent(model);
-            }
+//            for (Model model : modelMap.keySet()) {
+//                completeEvent(model);
+//            }
             terminate();
             System.out.println("gpu service terminated");
         });
 
-       subscribeEvent(TrainModelEvent.class, modelEvent -> {
-           Model model = modelEvent.getModel();
-           gpu.addTrainModel(model);
-           modelMap.put(model,modelEvent);
+        subscribeEvent(TrainModelEvent.class, modelEvent -> {
+            Model model = modelEvent.getModel();
+            gpu.addTrainModel(model);
+            modelMap.put(model, modelEvent);
 
-       });
-        subscribeBroadcast(TickBroadcast.class , tickBroadcast -> {
+        });
+        subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             tick = tickBroadcast.get();
             gpu.updateTick(tick);
         });
 
-       subscribeEvent(TestModelEvent.class, modelEvent -> {
+        subscribeEvent(TestModelEvent.class, modelEvent -> {
             Model model = modelEvent.getModel();
             gpu.addTestModel(model);
-            modelMap.put(model,modelEvent);
-       });
+            modelMap.put(model, modelEvent);
+        });
 
         // wait for all microServices to subscribe
         CRMSRunner.countDown.countDown();
 
     }
-    public void completeEvent(Model model){
+
+    public void completeEvent(Model model) {
         Event event = modelMap.get(model);
-        if(event.getClass() == TrainModelEvent.class) {
+        if (event.getClass() == TrainModelEvent.class) {
             complete(event, model.getStatus());
-            System.out.println("done training "+model.getName());
-        }
-        else{ // testModel event
+            System.out.println("done training " + model.getName() + " with status: " + model.getStatus().toString());
+        } else { // testModel event
             complete(event, model.getResult());
-            System.out.println("done testing "+model.getName());
+            System.out.println("done testing " + model.getName() + " with result: " +model.getResult().toString());
 
         }
         modelMap.remove(model);
