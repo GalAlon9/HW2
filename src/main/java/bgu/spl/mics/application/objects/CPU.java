@@ -85,14 +85,16 @@ public class CPU {
      * @return how many ticks required to process the data
      */
     public int ticksToProcess(DataBatch db) {
-        if (db.getData().getType() == Data.Type.Images) {
-            return (32 / cores) * 4;
+        int ticks = 0;
+        if (db.getData().getType().equals(Data.Type.Images)) {
+            ticks = (32 / cores) * 4;
         }
-        if (db.getData().getType() == Data.Type.Text) {
-            return (32 / cores) * 2;
+        else if (db.getData().getType().equals(Data.Type.Text)) {
+            ticks =  (32 / cores) * 2;
         } else {
-            return 32 / cores;
+            ticks = 32 / cores;
         }
+        return  ticks;
     }
 
     public int getTimeToWait() {

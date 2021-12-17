@@ -143,7 +143,7 @@ public class GPU {
 
     private void doneTrainingModel() {
         if (currModel != null) {
-            currModel.setStatus(Model.Status.Trained);
+//            currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics
         }
@@ -194,7 +194,7 @@ public class GPU {
         while (!testModelQueue.isEmpty()) {
             Model model = testModelQueue.poll();
             Model.Result result = getResult(model);
-            model.setStatus(Model.Status.Tested);
+//            model.setStatus(Model.Status.Tested);
             model.setResult(result);
             gpuService.completeEvent(model); // resolve the future of the testModelEvent
         }

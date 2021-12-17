@@ -23,7 +23,7 @@ public class Model {
     }
 
     public enum Status {
-        PreTrained, Training, Trained, Tested
+        PreTrained, Training, Trained, Tested, Testing
     }
     public String getName(){
         return this.name;

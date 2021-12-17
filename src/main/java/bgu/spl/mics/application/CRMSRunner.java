@@ -155,7 +155,7 @@ public class CRMSRunner {
     }
 
     public static void ConferencesInitialize(JsonArray conferences, List<MicroService> msList) {
-        int start = 0;
+        int start = 1;
         for (JsonElement conferenceElement : conferences) {
             JsonObject conferenceObject = conferenceElement.getAsJsonObject();
             String name = conferenceObject.get("name").getAsString();

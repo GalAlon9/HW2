@@ -77,13 +77,17 @@ public class StudentService extends MicroService {
             }
             setNextModel();
         } else if (currModel.getStatus().equals(Model.Status.Trained)) {
+            currModel.setStatus(Model.Status.Testing);
             testModel();
-        } else if (currModel.getStatus().equals(Model.Status.PreTrained)) trainModel();
+        } else if (currModel.getStatus().equals(Model.Status.PreTrained)){
+            currModel.setStatus(Model.Status.Training);
+            trainModel();
+        }
     }
 
 //    }
-    private  synchronized void setNextModel() {
-        if (currModelIndex < student.getModels().size() - 1) {
+    private void setNextModel() {
+        if (currModelIndex < student.getModels().size()) {
             currModel = student.getModels().get(currModelIndex);
             currModelIndex++;
             System.out.println("student : "+student.getName() +"next model = " + currModel.getName() + " curr model index = " + (currModelIndex-1));
@@ -92,7 +96,9 @@ public class StudentService extends MicroService {
     }
 
     private Future trainModel() {
+        System.out.println("------------sending trainig model event: "+ currModel.getName());
         return sendEvent(new TrainModelEvent(currModel));
+
     }
 
     private Future testModel() {

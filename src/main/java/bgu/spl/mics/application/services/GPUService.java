@@ -77,6 +77,7 @@ public class GPUService extends MicroService {
         } else if (testMap.containsKey(model)) {
             { // testModel event
                 Event testEvent = testMap.get(model);
+                model.setStatus(Model.Status.Tested);
                 complete(testEvent, model.getResult());
                 System.out.println("done testing " + model.getName() + " with result: " + model.getResult().toString());
                 testMap.remove(model);
