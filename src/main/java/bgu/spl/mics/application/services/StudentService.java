@@ -23,7 +23,6 @@ import java.util.LinkedList;
 public class StudentService extends MicroService {
     private String name;
     private final Student student;
-    private int tick = 0;
     private Model currModel = null;
     private int currModelIndex =0;
 

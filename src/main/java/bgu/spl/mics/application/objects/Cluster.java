@@ -6,7 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.Integer.compare;
 
 /**
  * Passive object representing the cluster.
