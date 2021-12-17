@@ -20,7 +20,7 @@ public class ModelRes {
         JsonObject modelObj = new JsonObject();
         modelObj.addProperty("name",name);
         JsonObject dataObj = new JsonObject();
-        dataObj.addProperty("type", String.valueOf(data.getType()));
+        dataObj.addProperty("type", data.toString());
         dataObj.addProperty("size", data.Size());
         modelObj.add("data", dataObj);
         modelObj.addProperty("status",status);

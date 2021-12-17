@@ -2,15 +2,12 @@ package bgu.spl.mics.application;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.*;
+import bgu.spl.mics.application.objects.OutputResults.OutputJson;
 import bgu.spl.mics.application.services.*;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,8 +42,26 @@ public class CRMSRunner {
             e.printStackTrace();
         }
 
-        JsonObject jsonOutPut = new JsonObject();
-        JsonArray students = new JsonArray();
+//        JsonObject jsonOutPut = new JsonObject();
+//        JsonArray students = new JsonArray();
+
+
+
+        JsonObject output = OutputJson.getInstance().writeOutput();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(output.toString());
+        String prettyJson = gson.toJson(je);
+        System.out.println(prettyJson);
+
+//        try {
+//            File outputFile = new File("output_file.json");
+//            FileOutputStream outputStream = new FileOutputStream(outputFile);
+//            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
 
         System.out.println("-----------cpu time used " + Cluster.getInstance().
 
@@ -65,7 +80,6 @@ public class CRMSRunner {
         }
         System.out.println();
         System.out.println("---------finish-----------");
-
     }
 
     public static void initializeAll(String path) {

@@ -36,4 +36,7 @@ public class Data {
         return type;
     }
     public void increaseProcessed() {processed +=1000;}
+    public String toString(){
+        return this.type.toString();
+    }
 }
