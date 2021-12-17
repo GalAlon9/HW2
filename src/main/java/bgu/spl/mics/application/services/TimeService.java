@@ -29,7 +29,7 @@ public class TimeService extends MicroService {
 
     public TimeService(int speed, int duration) {
         super("TimeService");
-        currTick = 1;
+        currTick = 0;
         this.speed = speed;
         this.duration = duration;
     }

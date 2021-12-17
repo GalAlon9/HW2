@@ -46,8 +46,8 @@ public class GPU {
     private void sendToCluster() {
         while (!Disk.isEmpty() && getCapacity() > 0) {
             DataBatch unProcessedData = extractBatchesFromDisk();
-            if(unProcessedData == null){
-                int x =2;
+            if (unProcessedData == null) {
+                int x = 2;
             }
             cluster.receiveDataFromGPUSendToCPU(unProcessedData);
             VRAM_Capacity--;
@@ -71,8 +71,7 @@ public class GPU {
         this.currModel = null;
         if (!trainModelQueue.isEmpty()) {
             this.currModel = trainModelQueue.poll();
-            currModel.setStatus(Model.Status.Training);
-            System.out.println("start training model "+ currModel.getName());
+            System.out.println("start training model " + currModel.getName());
         }
     }
 
@@ -109,7 +108,7 @@ public class GPU {
         if (currModel != null) {
             for (int i = 0; i < currModel.getData().Size(); i += 1000) {
                 DataBatch db = new DataBatch(i, currModel.getData());
-                if(db == null){
+                if (db == null) {
                     int x = 2;
                 }
                 db.setGpu(this);
@@ -174,9 +173,15 @@ public class GPU {
     }
 
     private int ticksToTrain() {
-        if (type == Type.RTX3090) return 1;
-        if (type == Type.RTX2080) return 2;
-        else return 4;
+        int ticks = 0;
+        if (type.equals(Type.RTX3090)) {
+            ticks = 1;
+        }
+        else if (type.equals(Type.RTX2080)){
+            ticks = 2;
+        }
+        else ticks = 4;
+        return ticks;
     }
 
     private int getTick() {

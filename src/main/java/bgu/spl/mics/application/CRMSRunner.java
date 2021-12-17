@@ -47,22 +47,23 @@ public class CRMSRunner {
         JsonObject jsonOutPut = new JsonObject();
         JsonArray students = new JsonArray();
 
-        System.out.println("cpu time used " + Cluster.getInstance().
+        System.out.println("-----------cpu time used " + Cluster.getInstance().
 
                 getCpuTime());
-        System.out.println("gpu time used " + Cluster.getInstance().
+        System.out.println("-----------gpu time used " + Cluster.getInstance().
 
                 getGpuTime());
-        System.out.println("data batch processed " + Cluster.getInstance().
+        System.out.println("-----------data batch processed " + Cluster.getInstance().
 
                 getProcessedData());
         ConcurrentLinkedQueue<String> modelsTrained = Cluster.getInstance().getModelsTrained();
-        System.out.println("Models trained :");
+        System.out.println("---------Models trained :");
         for (
                 String model : modelsTrained) {
             System.out.println(model);
         }
-        System.out.println("finish");
+        System.out.println();
+        System.out.println("---------finish-----------");
 
     }
 

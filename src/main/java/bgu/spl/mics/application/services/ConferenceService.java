@@ -8,6 +8,7 @@ import bgu.spl.mics.application.objects.Model;
 import bgu.spl.mics.application.objects.OutputResults.ConferenceRes;
 import bgu.spl.mics.application.objects.OutputResults.ModelRes;
 import bgu.spl.mics.application.objects.OutputResults.OutputJson;
+import bgu.spl.mics.application.objects.Student;
 
 import java.util.LinkedList;
 
@@ -67,8 +68,13 @@ public class ConferenceService extends MicroService {
             }
             ConferenceRes conferenceRes = new ConferenceRes(conference.getName(),conference.getDate(),models);
             OutputJson.getInstance().addConferenceRes(conferenceRes);
-            terminate();
+
+            System.out.println("conference " + conference.getName() + " models : ");
+            for(Model model : conference.getModelList()){
+                System.out.println(model.getName());
+            }
             System.out.println("conference service  " + conference.getName() + " terminated");
+            terminate();
         }
     }
 }

@@ -66,7 +66,7 @@ public class StudentService extends MicroService {
 
     }
 
-    private synchronized void act() {
+    private void act() {
         //  send models to train -> test -> publish
         if (currModel == null) {
             return;
@@ -86,7 +86,7 @@ public class StudentService extends MicroService {
         if (currModelIndex < student.getModels().size() - 1) {
             currModel = student.getModels().get(currModelIndex);
             currModelIndex++;
-            System.out.println("next model = " + currModel.getName() + "curr model index = " + (currModelIndex-1));
+            System.out.println("student : "+student.getName() +"next model = " + currModel.getName() + " curr model index = " + (currModelIndex-1));
         } else currModel = null;
 
     }
@@ -96,10 +96,12 @@ public class StudentService extends MicroService {
     }
 
     private Future testModel() {
+        System.out.println("------------sending testing model event: "+ currModel.getName());
         return sendEvent(new TestModelEvent(currModel));
     }
 
     private void publishResult() {
+        System.out.println("------------sending publish model event: "+ currModel.getName());
         sendEvent(new PublishResultsEvent(currModel));
     }
 

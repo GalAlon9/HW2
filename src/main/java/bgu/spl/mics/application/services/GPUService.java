@@ -68,9 +68,10 @@ public class GPUService extends MicroService {
     public void completeEvent(Model model) {
         if (trainMap.containsKey(model)) {
             Event trainEvent = trainMap.get(model);
-            if (trainEvent.getClass() == TrainModelEvent.class) {
+            if (trainEvent.getClass().equals(TrainModelEvent.class)) {
+                model.setStatus(Model.Status.Trained);
                 complete(trainEvent, model.getStatus());
-                System.out.println("done training " + model.getName() + " with status: " + model.getStatus().toString());
+                System.out.println("Done training " + model.getName());
                 trainMap.remove(model);
             }
         } else if (testMap.containsKey(model)) {
