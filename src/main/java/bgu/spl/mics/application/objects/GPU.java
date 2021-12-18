@@ -45,6 +45,13 @@ public class GPU {
         this.gpuService = gpuService;
     }
 
+
+    /**
+     * @pre !disk.isEmpty && vramCapacity > 0
+     * @post @post(disk.size) = max(@pre(disk.size) - vramCapacity , 0)
+     *       post(vram capacity) = @pre(Vram capacity) - (@post(disk.size) - @pre(disk.size))
+     *
+     */
     private void sendToCluster() {
         while (!Disk.isEmpty() && getCapacity() > 0) {
             DataBatch unProcessedData = extractBatchesFromDisk();
@@ -56,10 +63,17 @@ public class GPU {
         }
     }
 
+    /**
+     * @param model
+     * @post @post(testModelQueue.size) = @pre(testModelQueue.size) + 1
+     */
     public void addTestModel(Model model) {
         testModelQueue.add(model);
     }
-
+    /**
+     * @param model
+     * @post @post(trainModelQueue.size) = @pre(trainModelQueue.size) + 1
+     */
     public void addTrainModel(Model model) {
         trainModelQueue.add(model);
     }
@@ -86,26 +100,30 @@ public class GPU {
     }
 
     /**
+     * gets the un-processed data batch from the disk
      * @return unprocessed dataBatch
      * @inv !isDoneTraining()
      * @pre: disk is not empty
      * @post: @pre(disk.size()) == @post(disk.size() - 1)
      */
-    // gets the un-processed data batch from the disk
     public DataBatch extractBatchesFromDisk() {
         return Disk.poll();
     }
 
     /**
-     * @inv: getCapacity() >= 1
-     * @post: @pre(getCapacity()) == @post(getCapacity()) + 1
+     * gets the processed data from cluster and puts it in VRAM
+     * @post: @post(vram.size) = @pre(vram.size) + 1
      */
-    //gets the processed data from cluster and puts it in VRAM
     public void receiveProcessedData(DataBatch processedDataBatch) {
         VRAM.add(processedDataBatch);
     }
 
-    // prepare batches from model.data and insert the batches into the disk
+    /**
+     * prepare batches from model.data and insert the batches into the disk
+     * @pre: currModel != null
+     * @inv: disk.isEmpty
+     * @post: disk.size = model.data.size /1000
+     */
     public void prepareBatches() {
         if (currModel != null) {
             for (int i = 0; i < currModel.getData().Size(); i += 1000) {
@@ -120,11 +138,12 @@ public class GPU {
     }
 
     /**
+     * train the next dataBatch in vram
      * @pre: None
      * @inv: !vram.isEmpty() && getModel() != null
-     * @post: @pre(data.proccesed) = @post(data.proccesed - 1)
+     * @post: @post(vram.size) = @pre(vram.size) + 1
      */
-    public void train() {
+    public void startTrainingDB() {
         if (!VRAM.isEmpty() && currModel != null) {
             isTraining = true;
             VRAM.poll();
@@ -145,7 +164,6 @@ public class GPU {
 
     private void doneTrainingModel() {
         if (currModel != null) {
-//            currModel.setStatus(Model.Status.Trained);
             gpuService.completeEvent(getModel());
             cluster.addModel(currModel.getName()); // add model to trained models statistics
             isTraining = false;
@@ -153,10 +171,13 @@ public class GPU {
         }
     }
 
+    /**
+     * update the current tick and make the gpu act
+     * @param tick
+     * @pre: none
+     * @post: @post(tick) = @pre(tick) + 1
+     */
     public void updateTick(int tick) {
-        if(tick == 25000 ||tick == 33000 ||tick == 40000){
-            int x =2;
-        }
         currTick = tick;
         if (isTraining()) {
             cluster.increaseGpuTime();
@@ -164,22 +185,28 @@ public class GPU {
                 VRAM_Capacity++;
                 sendToCluster();
             }
+            else{
+                return;
+            }
         }
         if (isDoneTrainingModel()) {  // finished training model
             doneTrainingModel();
-            testModels(); // test next models if available
-            setNextModel(); // train the the next model
+            testModels(); // test available models
+            setNextModel(); // set next model to train
             prepareBatches();
             sendToCluster();
         }
-        train();
+        startTrainingDB();
+
     }
 
     public boolean isTraining() {
         return isTraining;
     }
 
-    private int ticksToTrain() {
+
+    // returns ticks required to train the model depends on the gpu type
+    public int ticksToTrain() {
         int ticks = 0;
         if (type.equals(Type.RTX3090)) {
             ticks = 1;
@@ -201,9 +228,9 @@ public class GPU {
         while (!testModelQueue.isEmpty()) {
             Model model = testModelQueue.poll();
             Model.Result result = getResult(model);
-//            model.setStatus(Model.Status.Tested);
             model.setResult(result);
-            gpuService.completeEvent(model); // resolve the future of the testModelEvent
+            // resolve the future of the testModelEvent
+            gpuService.completeEvent(model);
         }
     }
 
