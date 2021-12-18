@@ -59,22 +59,23 @@ public class ConferenceService extends MicroService {
 
         //add the conference results to the output file and terminate
         if(currTick == conference.getFinish()){
-
             sendBroadcast(new PublishConferenceBroadcast(conference));
-            LinkedList models = new LinkedList();
-
-            for(Model m : this.conference.getModelList()){
-                models.add(new ModelRes(m.getName(), m.getData(), m.statusToString(),m.resultToString()));
-            }
-            ConferenceRes conferenceRes = new ConferenceRes(conference.getName(),conference.getDate(),models);
-            OutputJson.getInstance().addConferenceRes(conferenceRes);
-
             System.out.println("conference " + conference.getName() + " models : ");
             for(Model model : conference.getModelList()){
                 System.out.println(model.getName());
             }
+            collectData();
             System.out.println("conference service  " + conference.getName() + " terminated");
             terminate();
         }
+    }
+
+    private void collectData() {
+        LinkedList models = new LinkedList();
+        for(Model m : this.conference.getModelList()){
+            models.add(new ModelRes(m.getName(), m.getData(), m.statusToString(),m.resultToString()));
+        }
+        ConferenceRes conferenceRes = new ConferenceRes(conference.getName(),conference.getDate(),models);
+        OutputJson.getInstance().addConferenceRes(conferenceRes);
     }
 }

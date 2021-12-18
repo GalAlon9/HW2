@@ -217,7 +217,7 @@ public class GPU {
         return ticks;
     }
 
-    private int getTick() {
+    public int getTick() {
         return currTick;
     }
 
@@ -242,4 +242,11 @@ public class GPU {
         } else return prob <= 0.8 ? Model.Result.Good : Model.Result.Bad;
     }
 
+    public int getVRAMSize(){
+        return VRAM.size();
+    }
+
+    public int getDiskSize(){
+        return Disk.size();
+    }
 }
