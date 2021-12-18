@@ -73,6 +73,9 @@ public class CPU {
             process();
         }
     }
+    public int getCores(){
+        return cores;
+    }
 
     public int getTick() {
         return currTick;

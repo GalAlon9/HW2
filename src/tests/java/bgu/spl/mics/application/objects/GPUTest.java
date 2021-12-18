@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.objects;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,38 +16,12 @@ public class GPUTest {
     public void setUp() throws Exception {
         cluster = Cluster.getInstance();
         gpu = new GPU(GPU.Type.RTX3090);
-        data = new Data("Images", 100);
+        data = new Data("Images", 10000);
         model = new Model("model", data, null);
-
     }
 
     @Test
-    public void setModelTest() {
-
-    }
-
-    @Test
-    // todo: change test!
-    public void trainTest() {
-
-
-    }
-
-    @Test
-    // todo: change test!
-    public void testReceiveProcessedData() {
-        //setup
-        DataBatch db = new DataBatch(0, data);
-        //before
-        int preCapacity = gpu.getCapacity();
-        //set
-        gpu.receiveProcessedData(db);
-        //after
-        assertEquals(preCapacity - 1, gpu.getCapacity());
-    }
-
-    @org.junit.jupiter.api.Test
-    void setNextModel() {
+    public void setNextModel() {
         //before
         assertNull("some model has been assigned", gpu.getModel());
         //set
@@ -55,47 +30,86 @@ public class GPUTest {
         //after
         assertNotNull("no model has been assigned to the gpu", gpu.getModel());
     }
-    @org.junit.jupiter.api.Test
-    void extractBatchesFromDisk() {
+
+    @Test
+    public void extractBatchesFromDisk() {
         //setup
-        DataBatch db;
         gpu.addTrainModel(model);
         gpu.setNextModel();
-        //set
         gpu.prepareBatches();
-        db = gpu.extractBatchesFromDisk();
+        //set
+        DataBatch db = gpu.extractBatchesFromDisk();
         //after
         assertNotNull("no dataBatch has been extracted", db);
     }
 
-    @org.junit.jupiter.api.Test
-    void receiveProcessedData() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void prepareBatches() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void train() {
+    @Test
+    public void receiveProcessedData() {
         //setup
+        DataBatch db = new DataBatch(0, data);
+        //before
+        int preCapacity = gpu.getVRAMSize();
+        //set
+        gpu.receiveProcessedData(db);
+        //after
+        assertEquals(preCapacity + 1, gpu.getVRAMSize());
+    }
+
+    @Test
+    public void prepareBatches() {
+        // setup
+        gpu.addTrainModel(model);
+        gpu.setNextModel();
+        // before
+        assertTrue(gpu.getDiskSize() == 0);
+        // set
+        gpu.prepareBatches();
+        // after
+        assertTrue(gpu.getDiskSize() == model.getData().Size()/1000);
+
+    }
+    @Test
+    public void startTrainingDB(){
+        // setup
         gpu.addTrainModel(model);
         gpu.setNextModel();
         DataBatch db = new DataBatch(0, data);
-        gpu.receiveProcessedData(db);
         //before
-        int preProcessed = data.getProcessed();
-        //set
+        gpu.receiveProcessedData(db);
+        int preVramSize = gpu.getVRAMSize();
+        // set
         gpu.startTrainingDB();
-        //after
-        assertEquals("the gpu didn't process any more data", preProcessed + 1, data.getProcessed());
+        // assert
+        assertEquals(preVramSize,gpu.getVRAMSize() + 1);
     }
 
-    @org.junit.jupiter.api.Test
-    void updateTick() {
+
+    @Test
+    public void updateTick() {
+        // setup
+        int preTick = gpu.getTick();
+        gpu.updateTick(preTick + 1);
+        // assert
+        assertEquals(preTick + 1, gpu.getTick());
     }
 
-    @org.junit.jupiter.api.Test
-    void isTraining() {
-    }
+    // doesn't compile because cluster needs to be init with cpus
+//    @Test
+//    public void sendToCluster(){
+//        // setup
+//        gpu.addTrainModel(model);
+//        gpu.setNextModel();
+//        DataBatch db = new DataBatch(0, data);
+//        // before
+//        gpu.prepareBatches();
+//        int preDiskSize = gpu.getDiskSize();
+//        int preVramCapaciy = gpu.getCapacity();
+//        System.out.println(preDiskSize);
+//        //set
+//        gpu.sendToCluster();
+//        // assert
+//        assertEquals(Math.max(preDiskSize -gpu.getCapacity(),0),gpu.getDiskSize());
+//        assertEquals(gpu.getCapacity(),preVramCapaciy - (gpu.getDiskSize() - preDiskSize));
+//    }
+
 }

@@ -3,7 +3,7 @@
     [
         {
             "name": "Simba",
-            "department": "Computer Science",            
+            "department": "Computer Science",
             "status": "MSc",
             "models":
             [
@@ -46,7 +46,7 @@
         },
         {
             "name": "Pumba",
-            "department": "Computer Science",            
+            "department": "Computer Science",
             "status": "PhD",
             "models":
             [
@@ -75,7 +75,7 @@
         },
         {
             "name": "Timon",
-            "department": "SE",            
+            "department": "SE",
             "status": "MSc",
             "models":
             [
@@ -104,7 +104,7 @@
         },
         {
             "name": "Nala",
-            "department": "Computer Science",            
+            "department": "Computer Science",
             "status": "PhD",
             "models":
             [

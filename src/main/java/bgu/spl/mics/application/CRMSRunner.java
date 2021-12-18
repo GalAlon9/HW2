@@ -26,8 +26,9 @@ public class CRMSRunner {
 
 
     public static void main(String[] args) {
-        // todo: change to args[0]
-        initializeAll("example_input.json");
+        String inputPath = args.length > 0 ? args[0] : "example_input.json";
+        // todo: change to args[0] when submitting
+        initializeAll(inputPath);
         countDown = new CountDownLatch(threadList.size());
         try {
             // Starts all the threads and initializes all the services
@@ -42,26 +43,10 @@ public class CRMSRunner {
             e.printStackTrace();
         }
 
-//        JsonObject jsonOutPut = new JsonObject();
-//        JsonArray students = new JsonArray();
+        saveOutputFile();
 
-
-
-        JsonObject output = OutputJson.getInstance().writeOutput();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonParser jp = new JsonParser();
-        JsonElement je = jp.parse(output.toString());
-        String prettyJson = gson.toJson(je);
-        System.out.println(prettyJson);
-
-//        try {
-//            File outputFile = new File("output_file.json");
-//            FileOutputStream outputStream = new FileOutputStream(outputFile);
-//            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
+        System.out.println("---data sent from gpus to cluster: " + Cluster.getInstance().dataSentFromGPUS);
+        System.out.println("---data sent from cpus to cluster: " + Cluster.getInstance().dataSentFromCPUS);
 
         System.out.println("-----------cpu time used " + Cluster.getInstance().
 
@@ -73,7 +58,7 @@ public class CRMSRunner {
 
                 getProcessedData());
         ConcurrentLinkedQueue<String> modelsTrained = Cluster.getInstance().getModelsTrained();
-        System.out.println( modelsTrained.size()+"---------Models trained :");
+        System.out.println(modelsTrained.size() + "---------Models trained :");
         for (
                 String model : modelsTrained) {
             System.out.println(model);
@@ -181,5 +166,24 @@ public class CRMSRunner {
             start = finish;
         }
     }
+
+    public static void saveOutputFile(){
+        JsonObject output = OutputJson.getInstance().writeOutput();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonParser jp = new JsonParser();
+        JsonElement je = jp.parse(output.toString());
+        String prettyJson = gson.toJson(je);
+        File myFile = new File("Assignment 2\\outputFile.txt");
+        try {
+            FileWriter myWriter = new FileWriter("outputFile.txt");
+            myWriter.write(prettyJson);
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
 
 }

@@ -31,12 +31,11 @@ public class ConferenceInformation {
         List<Model> models;
         if (publicationsByStudent.containsKey(student)) {
             models = publicationsByStudent.get(student);
-            models.add(model);
-            publicationsByStudent.put(student, models);
         } else {
             models= new LinkedList<>();
-            publicationsByStudent.put(student, models);
         }
+        models.add(model);
+        publicationsByStudent.put(student, models);
         allModels.add(model);
         size++;
     }

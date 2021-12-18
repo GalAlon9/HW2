@@ -7,36 +7,38 @@ import org.junit.Test;
 public class CPUTest {
     private static CPU cpu;
     DataBatch dataBatch;
-    
-     @Before
-    public void setUp(){
+
+    @Before
+    public void setUp() {
         cpu = new CPU(32);
-        dataBatch = new DataBatch(0, new Data("Text",1000));
+        dataBatch = new DataBatch(0, new Data("Text", 1000));
         dataBatch.setGpu(new GPU(GPU.Type.RTX3090));
 
     }
+
     @Test
-    public void addDataTest(){
+    public void addDataTest() {
         //setup
         int preSize = cpu.getDataSize();
 
         cpu.addData(dataBatch);
 
         assertEquals("Error if the data list size has not" +
-                " increase by one",preSize + 1, cpu.getDataSize());
+                " increase by one", preSize + 1, cpu.getDataSize());
 
     }
+
     @Test
-    public void testUpdateTick(){
+    public void testUpdateTick() {
         // setup
         int preTick = cpu.getTick();
         cpu.updateTick(preTick + 1);
         // assert
-        assertEquals(preTick + 1,cpu.getTick());
+        assertEquals(preTick + 1, cpu.getTick());
     }
 
     @Test
-    public void processTest(){
+    public void processTest() {
         //setup
         cpu.addData(dataBatch);
         int startTick = cpu.getTick();
@@ -48,14 +50,38 @@ public class CPUTest {
         cpu.updateTick(startTick + 2);
         //after
         assertTrue("Error if not processed", dataBatch.IsProcessed());
-        assertEquals(startTick+cpu.ticksToProcess(dataBatch), cpu.getTick());
+        assertEquals(startTick + cpu.ticksToProcess(dataBatch), cpu.getTick());
     }
+
     @Test
-    public void ticksTest(){
-        assertEquals("Expected 2", 2 ,cpu.ticksToProcess(dataBatch));
+    public void ticksTest() {
+        assertEquals("Expected 2", 2, cpu.ticksToProcess(dataBatch));
     }
-    
 
-    
 
+    @org.junit.jupiter.api.Test
+    void addData() {
+    }
+
+    @org.junit.jupiter.api.Test
+    void process() {
+    }
+
+    @org.junit.jupiter.api.Test
+    void isProcessing() {
+    }
+
+    @org.junit.jupiter.api.Test
+    void updateTick() {
+    }
+
+
+    @org.junit.jupiter.api.Test
+    void ticksToProcess() {
+    }
+
+    @org.junit.jupiter.api.Test
+    void getTimeToWait() {
+    }
 }
+

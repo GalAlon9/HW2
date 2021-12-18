@@ -52,7 +52,7 @@ public class GPU {
      *       post(vram capacity) = @pre(Vram capacity) - (@post(disk.size) - @pre(disk.size))
      *
      */
-    private void sendToCluster() {
+    public void sendToCluster() {
         while (!Disk.isEmpty() && getCapacity() > 0) {
             DataBatch unProcessedData = extractBatchesFromDisk();
             if (unProcessedData == null) {
@@ -87,7 +87,7 @@ public class GPU {
         this.currModel = null;
         if (!trainModelQueue.isEmpty()) {
             this.currModel = trainModelQueue.poll();
-            System.out.println("start training model " + currModel.getName());
+//            System.out.println("start training model " + currModel.getName() + "at tick " + currTick);
         }
     }
 
@@ -128,9 +128,6 @@ public class GPU {
         if (currModel != null) {
             for (int i = 0; i < currModel.getData().Size(); i += 1000) {
                 DataBatch db = new DataBatch(i, currModel.getData());
-                if (db == null) {
-                    int x = 2;
-                }
                 db.setGpu(this);
                 Disk.add(db);
             }
@@ -148,7 +145,6 @@ public class GPU {
             isTraining = true;
             VRAM.poll();
             endTrainingDBTick = getTick() + ticksToTrain();
-            currModel.getData().increaseProcessed();
         }
     }
 
@@ -181,9 +177,12 @@ public class GPU {
         currTick = tick;
         if (isTraining()) {
             cluster.increaseGpuTime();
-            if (getTick() == endTrainingDBTick) {
+            // done training current data batch
+            if (getTick() >= endTrainingDBTick) {
+                currModel.getData().increaseProcessed();
                 VRAM_Capacity++;
                 sendToCluster();
+                isTraining = false;
             }
             else{
                 return;
@@ -206,7 +205,7 @@ public class GPU {
 
 
     // returns ticks required to train the model depends on the gpu type
-    public int ticksToTrain() {
+    private int ticksToTrain() {
         int ticks = 0;
         if (type.equals(Type.RTX3090)) {
             ticks = 1;

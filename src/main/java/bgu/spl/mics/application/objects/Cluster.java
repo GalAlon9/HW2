@@ -21,7 +21,6 @@ import static java.lang.Integer.compare;
 
 public class Cluster {
     private final List<GPU> gpus;
-    private final PriorityBlockingQueue cpuMinHeap;
     private final List<CPU> cpuList;
     private final AtomicInteger cpuTime;
     private final ConcurrentLinkedQueue<String> modelsTrained;
@@ -29,6 +28,9 @@ public class Cluster {
     private final AtomicInteger gpuTime;
     private Object lock1 = new Object();
     private Object lock2 = new Object();
+    public int dataSentFromGPUS = 0;
+    public int dataSentFromCPUS = 0;
+
 
 
     /**
@@ -36,7 +38,6 @@ public class Cluster {
      */
     private Cluster() {
         gpus = new LinkedList<>();
-        cpuMinHeap = new PriorityBlockingQueue();
         cpuList = new LinkedList<>();
         cpuTime = new AtomicInteger();
         gpuTime = new AtomicInteger();
@@ -44,9 +45,12 @@ public class Cluster {
         modelsTrained = new ConcurrentLinkedQueue<>();
 
     }
-    public int cpuComparator(CPU a, CPU b){
-        return b.getTimeToWait() - a.getTimeToWait();
-    }
+//    public int cpuComparator(CPU a, CPU b){
+//        if(b.getTimeToWait() == a.getTimeToWait()){
+//            return b.getCores() - a.getCores();
+//        }
+//        return b.getTimeToWait() - a.getTimeToWait();
+//    }
 
     public static Cluster getInstance() {
         return SingletonHolder.instance;
@@ -67,27 +71,30 @@ public class Cluster {
 
     public void receiveDataFromGPUSendToCPU(DataBatch db) {
         synchronized (lock1) {
-//            assert cpuMinHeap.peek() != null;
-//            CPU receiver = cpuMinHeap.peek();
-            CPU minCPU = cpuList.get(0);
-            for(CPU cpu : cpuList){
-                if(cpu.getTimeToWait() < minCPU.getTimeToWait()){
-                    minCPU = cpu;
-                }
-            }
+            dataSentFromGPUS++;
+            CPU minCPU = minTimeCpu();
             minCPU.addData(db);
-            if(minCPU.getTick()% 5000  < 10){
-                int x = 2;
-            }
         }
     }
 
-    public void receiveDataFromCPUSendToGPU(DataBatch db) {
-        if(db.IsProcessed()) {
-            synchronized (lock2) {
-                db.getGpu().receiveProcessedData(db);
+    private CPU minTimeCpu(){
+        CPU minCPU = cpuList.get(0);
+        for(CPU cpu : cpuList){
+            if(cpu.getTimeToWait() < minCPU.getTimeToWait()){
+                minCPU = cpu;
+            }
+            else if(cpu.getTimeToWait() == minCPU.getTimeToWait()){
+                minCPU = cpu.getCores() > minCPU.getCores() ? cpu : minCPU;
             }
         }
+        return minCPU;
+    }
+
+    public void receiveDataFromCPUSendToGPU(DataBatch db) {
+            synchronized (lock2) {
+                dataSentFromCPUS++;
+                db.getGpu().receiveProcessedData(db);
+            }
     }
 
 

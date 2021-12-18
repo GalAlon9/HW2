@@ -21,7 +21,6 @@ import java.util.LinkedList;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    private String name;
     private final Student student;
     private Model currModel = null;
     private int currModelIndex =0;

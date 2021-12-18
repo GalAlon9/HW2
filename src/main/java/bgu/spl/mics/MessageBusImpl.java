@@ -176,8 +176,8 @@ public class MessageBusImpl implements MessageBus {
             if (eventMap.containsKey(e.getClass()) && !eventMap.get(e.getClass()).isEmpty()) {
                 synchronized (MSqueueLocker) {
                     MicroService m = eventMap.get(e.getClass()).poll();
-                    MSqueueMap.get(m).add(e);
-                    eventMap.get(e.getClass()).add(m);
+                    MSqueueMap.get(m).offer(e);
+                    eventMap.get(e.getClass()).offer(m);
 
                     synchronized (futureLocker) {
                         futureMap.put(e, new Future<T>());
