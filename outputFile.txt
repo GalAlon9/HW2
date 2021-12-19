@@ -1,88 +1,17 @@
 {
   "students": [
     {
-      "name": "Nala",
-      "department": "Computer Science",
-      "status": "PhD",
-      "publications": 0,
-      "papersRead": 2,
-      "trainedModels": []
-    },
-    {
-      "name": "Timon",
-      "department": "SE",
-      "status": "MSc",
-      "publications": 0,
-      "papersRead": 2,
-      "trainedModels": [
-        {
-          "name": "Percepetron",
-          "data": {
-            "type": "Tabular",
-            "size": 1000000
-          },
-          "status": "Tested",
-          "result": "Bad"
-        },
-        {
-          "name": "GNN",
-          "data": {
-            "type": "Tabular",
-            "size": 1000000
-          },
-          "status": "Tested",
-          "result": "Bad"
-        }
-      ]
-    },
-    {
-      "name": "Simba",
-      "department": "Computer Science",
-      "status": "MSc",
-      "publications": 0,
-      "papersRead": 2,
-      "trainedModels": [
-        {
-          "name": "YOLO10",
-          "data": {
-            "type": "Images",
-            "size": 200000
-          },
-          "status": "Tested",
-          "result": "Bad"
-        }
-      ]
-    },
-    {
       "name": "Pumba",
       "department": "Computer Science",
       "status": "PhD",
-      "publications": 2,
-      "papersRead": 0,
+      "publications": 1,
+      "papersRead": 3,
       "trainedModels": [
         {
           "name": "Bert",
           "data": {
             "type": "Text",
             "size": 1000000
-          },
-          "status": "Tested",
-          "result": "Bad"
-        },
-        {
-          "name": "GPT4",
-          "data": {
-            "type": "Text",
-            "size": 1000000
-          },
-          "status": "Tested",
-          "result": "Good"
-        },
-        {
-          "name": "GPT5",
-          "data": {
-            "type": "Text",
-            "size": 200000
           },
           "status": "Tested",
           "result": "Good"
@@ -94,8 +23,70 @@
       "department": "EE",
       "status": "PhD",
       "publications": 0,
-      "papersRead": 2,
+      "papersRead": 4,
       "trainedModels": []
+    },
+    {
+      "name": "Nala",
+      "department": "Computer Science",
+      "status": "PhD",
+      "publications": 0,
+      "papersRead": 4,
+      "trainedModels": []
+    },
+    {
+      "name": "Timon",
+      "department": "SE",
+      "status": "MSc",
+      "publications": 2,
+      "papersRead": 2,
+      "trainedModels": [
+        {
+          "name": "Percepetron",
+          "data": {
+            "type": "Tabular",
+            "size": 1000000
+          },
+          "status": "Tested",
+          "result": "Good"
+        },
+        {
+          "name": "GNN",
+          "data": {
+            "type": "Tabular",
+            "size": 1000000
+          },
+          "status": "Tested",
+          "result": "Bad"
+        },
+        {
+          "name": "MoreStyleGAN",
+          "data": {
+            "type": "Images",
+            "size": 100000
+          },
+          "status": "Tested",
+          "result": "Good"
+        }
+      ]
+    },
+    {
+      "name": "Simba",
+      "department": "Computer Science",
+      "status": "MSc",
+      "publications": 1,
+      "papersRead": 3,
+      "trainedModels": [
+        {
+          "name": "YOLO10",
+          "data": {
+            "type": "Images",
+            "size": 200000
+          },
+          "status": "Tested",
+          "result": "Good"
+        }
+      ]
     }
   ],
   "conferences": [
@@ -104,7 +95,25 @@
       "date": 20000,
       "publications": [
         {
-          "name": "GPT4",
+          "name": "YOLO10",
+          "data": {
+            "type": "Images",
+            "size": 200000
+          },
+          "status": "Tested",
+          "result": "Good"
+        },
+        {
+          "name": "Percepetron",
+          "data": {
+            "type": "Tabular",
+            "size": 1000000
+          },
+          "status": "Tested",
+          "result": "Good"
+        },
+        {
+          "name": "Bert",
           "data": {
             "type": "Text",
             "size": 1000000
@@ -113,10 +122,10 @@
           "result": "Good"
         },
         {
-          "name": "GPT5",
+          "name": "MoreStyleGAN",
           "data": {
-            "type": "Text",
-            "size": 200000
+            "type": "Images",
+            "size": 100000
           },
           "status": "Tested",
           "result": "Good"
@@ -144,7 +153,7 @@
       "publications": []
     }
   ],
-  "cpuTimeUsed": 124280,
-  "gpuTimeUsed": 62927,
-  "batchesProcessed": 32002
+  "cpuTimeUsed": 312147,
+  "gpuTimeUsed": 63517,
+  "batchesProcessed": 58744
 }
